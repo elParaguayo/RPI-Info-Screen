@@ -46,17 +46,17 @@ def getScreens():
     a = []
     for i in getPlugins():
         plugin = loadPlugin(i)
-        #try:
+        try:
             # The plugin should have the myScreen function
             # We send the screen size for future proofing (i.e. plugins should be able to cater
             # for various screen resolutions
             #
             # TO DO: Work out whether plugin can return more than one screen!
-        a.append(plugin.myScreen(size))
+            a.append(plugin.myScreen(size))
         
-        #except:
+        except:
             # If it doesn't work, ignore that plugin and move on
-        #    continue
+            continue
     return a
 
 # Function for displaying list of plugins that should work
