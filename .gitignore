@@ -1,6 +1,7 @@
 *.IGNORE
 *.py[cod]
 *.COPY
+*.ini
 
 # C extensions
 *.so
