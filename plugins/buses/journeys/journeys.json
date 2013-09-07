@@ -1,0 +1,27 @@
+[
+    {
+        "name": "Queenstown Road",
+        "direction": "Clapham Junction",
+        "id": "55093",
+        "buses": [
+                    "156"
+                 ]
+    },
+    {
+        "name": "Queenstown Road",
+        "direction": "Sloane Square",
+        "id": "73954",
+        "buses": [
+                    "137", "452"
+                 ]
+    },
+    {
+        "name": "Wandsworth Road",
+        "direction": "Clapham Junction",
+        "id": "56380",
+        "buses": [
+                    "77", "87"
+                 ]
+    }
+]
+        

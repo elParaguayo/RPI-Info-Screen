@@ -46,17 +46,17 @@ def getScreens():
     a = []
     for i in getPlugins():
         plugin = loadPlugin(i)
-        try:
+        #try:
             # The plugin should have the myScreen function
             # We send the screen size for future proofing (i.e. plugins should be able to cater
             # for various screen resolutions
             #
             # TO DO: Work out whether plugin can return more than one screen!
-            a.append(plugin.myScreen(size))
+        a.append(plugin.myScreen(size))
         
-        except:
+        #except:
             # If it doesn't work, ignore that plugin and move on
-            continue
+        #    continue
     return a
 
 # Function for displaying list of plugins that should work
@@ -125,6 +125,9 @@ a=1
 b=pygame.time.get_ticks()
 c=-1
 d=0
+newscreen=False
+newwait=0
+refresh = 60000
 
 # Run our main loop
 while not quit:
@@ -168,11 +171,16 @@ while not quit:
         holdrect.centery = screen.get_rect().centery
         screen.blit(holdtext, holdrect)
         pygame.display.flip()
+        newscreen=True
+        newwait=pygame.time.get_ticks()+2000
+        c=a
                 
+    if newscreen and pygame.time.get_ticks()>newwait:
         # Get the next screen
+        newscreen = False
         screen = pluginScreens[a].showScreen()
         pygame.display.flip()
-        c=a
+        
 
         # time how long do we display screen
         nextscreen = pluginScreens[a].displaytime * 1000
@@ -184,7 +192,7 @@ while not quit:
         screen = pluginScreens[a].showScreen()
         pygame.display.flip()
         b = pygame.time.get_ticks()
-       
+    
 
 # If we're here we've exited the display loop...
 print "Exiting..."

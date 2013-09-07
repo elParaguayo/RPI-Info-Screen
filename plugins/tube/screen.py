@@ -8,51 +8,28 @@ import urllib2
 import simplejson as json
 import os
 import struct
+from displayscreen import PiInfoScreen
 
-class myScreen():
+
+class myScreen(PiInfoScreen):
+    supportedsizes = [ (694,466) ]
+    refreshtime = 60
+    displaytime = 5
+    pluginname = "TubeStatus"
+    plugininfo = "Shows current status of London Underground"
     
-    def __init__(self, screensize):
+    
+    def setPluginVariables(self):
         self.datasource = "http://cloud.tfl.gov.uk/TrackerNet/LineStatus"
-        self.supportedsizes = [ (694, 466) ]
-        self.screensize = screensize
-        self.refreshtime = 60
-        self.displaytime = 10
         self.tubelayout = [
             (10,100), (10,150), (10,200), (10,250), (10,300), (10,350), (10,400),
             (347,100), (347,150), (347,200), (347,250), (347,300), (347,350), (347,400)
             ]
         self.statuscolour = [(0,0,0), (17,56,146)]
-        if screensize not in self.supportedsizes:
-            print "Unsupported screen size"
-            self.supported = False
-        else:
-            self.supported = True
-            
-        pygame.init()
-        self.screen = pygame.display.set_mode(self.screensize)
-        self.mydir=os.path.dirname(os.path.abspath(__file__))
-        configfile = os.path.join(self.mydir, "resources", "resources.json")
+        configfile = os.path.join(self.plugindir, "resources", "resources.json")
         jconfig = open(configfile, 'r')
         self.config = json.load(jconfig)
     
-    def supported(self):
-        return self.supported
-        
-    def refreshtime(self):
-        return self.refreshtime
-        
-    def displaytime(self):
-        return self.displaytime
-    
-    def showInfo(self):
-        return "TubeStatus: shows live status of London Underground lines"
-
-    def showScreen(self):
-        return True
-        
-    def screenName(self):
-        return "TubeStatus"
-
     def showScreen(self):
         self.screen.fill([255,255,255])
         myfont = pygame.font.SysFont("freesans", 32)
@@ -90,7 +67,5 @@ class myScreen():
         updaterect = updatelabel.get_rect()
         updatepos = [self.screensize[0] - updaterect[2] - 5, self.screensize[1] - updaterect[3] - 5]
         self.screen.blit(updatelabel, updatepos)
-
-
 
         return self.screen

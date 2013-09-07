@@ -1,4 +1,6 @@
+*.IGNORE
 *.py[cod]
+*.COPY
 
 # C extensions
 *.so
