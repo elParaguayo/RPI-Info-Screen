@@ -103,18 +103,26 @@ class myScreen(PiInfoScreen):
         mysmallfont = pygame.font.SysFont(None, 24)
         
         if self.lmsServer == None:
-            errortext = pygame.font.SysFont("freesans",20).render("Logitech Media Server not found on %s." % (self.lmsserverIP),1,(255,255,255))
-            errorrect = errortext.get_rect()
-            errorrect.centerx = self.screen.get_rect().centerx
-            errorrect.centery = self.screen.get_rect().centery
-            self.screen.blit(errortext,errorrect)
+            try:
+                self.lmsServer = self.lmsLogon(self.lmsserverIP, self.lmsserverTelnetPort)
+                self.squeezePlayer = self.getSqueezePlayer(self.lmsServer)
+            finally:
+                errortext = pygame.font.SysFont("freesans",20).render("Logitech Media Server not found on %s." % (self.lmsserverIP),1,(255,255,255))
+                errorrect = errortext.get_rect()
+                errorrect.centerx = self.screen.get_rect().centerx
+                errorrect.centery = self.screen.get_rect().centery
+                self.screen.blit(errortext,errorrect)
             
         elif self.squeezePlayer == None:
-            errortext = pygame.font.SysFont("freesans",20).render("No Squeezeplayers connected to server on %s." % (self.lmsserverIP),1,(255,255,255))
-            errorrect = errortext.get_rect()
-            errorrect.centerx = self.screen.get_rect().centerx
-            errorrect.centery = self.screen.get_rect().centery
-            self.screen.blit(errortext,errorrect)
+            try:
+                self.lmsServer = self.lmsLogon(self.lmsserverIP, self.lmsserverTelnetPort)
+                self.squeezePlayer = self.getSqueezePlayer(self.lmsServer)
+            finally:
+                errortext = pygame.font.SysFont("freesans",20).render("No Squeezeplayers connected to server on %s." % (self.lmsserverIP),1,(255,255,255))
+                errorrect = errortext.get_rect()
+                errorrect.centerx = self.screen.get_rect().centerx
+                errorrect.centery = self.screen.get_rect().centery
+                self.screen.blit(errortext,errorrect)
         
         else:
             
