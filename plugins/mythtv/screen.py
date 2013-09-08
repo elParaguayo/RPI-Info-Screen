@@ -42,7 +42,7 @@ class myScreen(PiInfoScreen):
         return recs
 
     def showScreen(self):
-        self.screen.fill([0,0,0])
+        self.surface.fill([0,0,0])
 
         if self.be == None:
             try:
@@ -78,9 +78,9 @@ class myScreen(PiInfoScreen):
             
             screentitle = self.mytitlefont.render("MythTV upcoming recordings",1,(255,255,255))
             screenrect = screentitle.get_rect()
-            screenrect.centerx = self.screen.get_rect().centerx
+            screenrect.centerx = self.surface.get_rect().centerx
             screenrect.centery = 20
-            self.screen.blit(screentitle, screenrect)
+            self.surface.blit(screentitle, screenrect)
             
             n = min(len(recs),5)
             if n > 0:
@@ -93,9 +93,9 @@ class myScreen(PiInfoScreen):
                     titletext = self.render_textrect(recs[i]["title"], self.myboldfont, mytitlerect, fontcolour, rectcolour,1)
                     timetext = self.render_textrect(recs[i]["time"], self.myitalicfont, mytimerect, fontcolour, rectcolour,1)
                     desctext = self.render_textrect(recs[i]["desc"], self.myregularfont, mydescrect, fontcolour, rectcolour,0,5)
-                    self.screen.blit(titletext,((self.rectwidth*i)+(self.rectgap*(i+1)+self.rectadjust), 40))
-                    self.screen.blit(timetext,((self.rectwidth*i)+(self.rectgap*(i+1)+self.rectadjust), 80))
-                    self.screen.blit(desctext,((self.rectwidth*i)+(self.rectgap*(i+1)+self.rectadjust), 105))
+                    self.surface.blit(titletext,((self.rectwidth*i)+(self.rectgap*(i+1)+self.rectadjust), 40))
+                    self.surface.blit(timetext,((self.rectwidth*i)+(self.rectgap*(i+1)+self.rectadjust), 80))
+                    self.surface.blit(desctext,((self.rectwidth*i)+(self.rectgap*(i+1)+self.rectadjust), 105))
                     
                 if self.cachedmode:
                     mystatus = self.myitalicfont.render("Backend is offline. Displaying cached recording list",1,(255,255,255))
@@ -106,21 +106,25 @@ class myScreen(PiInfoScreen):
                         recording = "not"
                     mystatus = self.myitalicfont.render("Backend is online and is " + recording + " recording.",1,(255,255,255))
                     
-                self.screen.blit(mystatus,(5,445))
+                self.surface.blit(mystatus,(5,445))
             else:
                 failtext = self.myboldfont.render("No upcoming recordings found.",1, (255,255,255))
                 failrect = failtext.get_rect()
-                failrect.centerx = self.screen.get_rect().centerx
-                failrect.centery = self.screen.get_rect().centery
-                self.screen.blit(failtext, failrect)                
+                failrect.centerx = self.surface.get_rect().centerx
+                failrect.centery = self.surface.get_rect().centery
+                self.surface.blit(failtext, failrect)                
             
         else:
             failtext = self.myboldfont.render("MythTV backend unavailable.",1, (255,255,255))
             failrect = failtext.get_rect()
-            failrect.centerx = self.screen.get_rect().centerx
-            failrect.centery = self.screen.get_rect().centery
-            self.screen.blit(failtext, failrect)
+            failrect.centerx = self.surface.get_rect().centerx
+            failrect.centery = self.surface.get_rect().centery
+            self.surface.blit(failtext, failrect)
         
         self.be = None
+
+        # Scale our surface to the required screensize before sending back
+        scaled = pygame.transform.scale(self.surface,self.screensize)
+        self.screen.blit(scaled,(0,0))
 
         return self.screen

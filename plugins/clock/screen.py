@@ -14,16 +14,20 @@ class myScreen(PiInfoScreen):
         self.myfontsmall = pygame.font.Font(self.clockfont, 120)
         
     def showScreen(self):
-        self.screen.fill([0,0,0])
+        self.surface.fill([0,0,0])
         mytime = strftime("%H:%M")
         mysecs = strftime("%S")
         clocklabel = self.myfont.render(mytime, 1, [255,255,255])
         secondlabel = self.myfontsmall.render(mysecs, 1, [255,255,255])
         textpos = clocklabel.get_rect()
-        textpos.centerx = self.screen.get_rect().centerx
-        textpos.centery = self.screen.get_rect().centery
+        textpos.centerx = self.surface.get_rect().centerx
+        textpos.centery = self.surface.get_rect().centery
         secpos = [ textpos[0] + textpos[2] + 10, textpos[1] + 70 ]
-        self.screen.blit(secondlabel, secpos)
-        self.screen.blit(clocklabel, textpos) 
+        self.surface.blit(secondlabel, secpos)
+        self.surface.blit(clocklabel, textpos) 
+
+        # Scale our surface to the required screensize before sending back
+        scaled = pygame.transform.scale(self.surface,self.screensize)
+        self.screen.blit(scaled,(0,0))
 
         return self.screen

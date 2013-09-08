@@ -97,7 +97,7 @@ class myScreen(PiInfoScreen):
     
     # Main function - returns screen to main script
     def showScreen(self):
-        self.screen.fill([0,0,0])
+        self.surface.fill([0,0,0])
         myfont = pygame.font.SysFont(None, 30)
         mybigfont = pygame.font.SysFont(None, 38)
         mysmallfont = pygame.font.SysFont(None, 24)
@@ -109,9 +109,9 @@ class myScreen(PiInfoScreen):
             finally:
                 errortext = pygame.font.SysFont("freesans",20).render("Logitech Media Server not found on %s." % (self.lmsserverIP),1,(255,255,255))
                 errorrect = errortext.get_rect()
-                errorrect.centerx = self.screen.get_rect().centerx
-                errorrect.centery = self.screen.get_rect().centery
-                self.screen.blit(errortext,errorrect)
+                errorrect.centerx = self.surface.get_rect().centerx
+                errorrect.centery = self.surface.get_rect().centery
+                self.surface.blit(errortext,errorrect)
             
         elif self.squeezePlayer == None:
             try:
@@ -120,9 +120,9 @@ class myScreen(PiInfoScreen):
             finally:
                 errortext = pygame.font.SysFont("freesans",20).render("No Squeezeplayers connected to server on %s." % (self.lmsserverIP),1,(255,255,255))
                 errorrect = errortext.get_rect()
-                errorrect.centerx = self.screen.get_rect().centerx
-                errorrect.centery = self.screen.get_rect().centery
-                self.screen.blit(errortext,errorrect)
+                errorrect.centerx = self.surface.get_rect().centerx
+                errorrect.centery = self.surface.get_rect().centery
+                self.surface.blit(errortext,errorrect)
         
         else:
             if len(self.lmsServer.get_players()) == 0:
@@ -147,28 +147,28 @@ class myScreen(PiInfoScreen):
                 
                     # Now playing...
                     nowtext = myfont.render("Now playing...", 1, (255,255,255))
-                    self.screen.blit(nowtext, (290, 120))
+                    self.surface.blit(nowtext, (290, 120))
                     
                     # get artwork
-                    self.screen.blit(self.currentart, (20,40))
+                    self.surface.blit(self.currentart, (20,40))
                     
                     # get artist name
                     artisttext = mybigfont.render(self.currentartist, 1, [255,255,255])
-                    self.screen.blit(artisttext, (290,160))
+                    self.surface.blit(artisttext, (290,160))
                     
                     # get track name
                     tracktext = myfont.render(self.currenttrackname, 1, [255,255,255])
-                    self.screen.blit(tracktext, (290,210))        
+                    self.surface.blit(tracktext, (290,210))        
 
                     # get track album
                     albumtext = myfont.render(self.currentalbum, 1, [255,255,255])
-                    self.screen.blit(albumtext, (290,240))   
+                    self.surface.blit(albumtext, (290,240))   
                     
                     # Show progress bar
                     elapse = self.squeezePlayer.get_time_elapsed()
                     duration = self.squeezePlayer.get_track_duration()
                     trackposition = elapse / duration
-                    self.screen.blit(self.showProgress(trackposition,(150,10),(255,255,255),(0,0,144),(0,0,0)),(290,280))
+                    self.surface.blit(self.showProgress(trackposition,(150,10),(255,255,255),(0,0,144),(0,0,0)),(290,280))
                     
                     elapsem, elapses = divmod(int(elapse),60)
                     elapseh, elapsem = divmod(elapsem, 60)
@@ -183,7 +183,7 @@ class myScreen(PiInfoScreen):
                     progressstring = "%s / %s" % (elapsestring, durationstring)
                     
                     progresstext = myfont.render(progressstring, 1, (255,255,255))
-                    self.screen.blit(progresstext, (455, 270))
+                    self.surface.blit(progresstext, (455, 270))
                     
              
                     # Next track info
@@ -193,16 +193,19 @@ class myScreen(PiInfoScreen):
                             self.nexttrackart = pygame.transform.scale(self.LoadImageFromUrl("http://%s:%d/music/%s/cover.jpg" % (self.lmsserverIP, self.lmsserverWebPort, str(self.nexttracks[0]['id']))),(75,75))
 
                         nexttracklabel = mysmallfont.render("Next track: %s - %s" % (self.nexttracks[0]['artist'], self.nexttracks[0]['trackname']), 1, (255,255,255))
-                        self.screen.blit(self.nexttrackart, (20, 300))
-                        self.screen.blit(nexttracklabel, (105, 300))
+                        self.surface.blit(self.nexttrackart, (20, 300))
+                        self.surface.blit(nexttracklabel, (105, 300))
 
                     if len(self.nexttracks) > 1:
                         if updatenext:
                             self.xnexttrackart = pygame.transform.scale(self.LoadImageFromUrl("http://192.168.0.70:9000/music/" + str(self.nexttracks[1]['id']) + "/cover.jpg"),(75,75))
 
                         xnexttracklabel = mysmallfont.render("Next track: %s - %s" % (self.nexttracks[1]['artist'], self.nexttracks[1]['trackname']), 1, (255,255,255))
-                        self.screen.blit(self.xnexttrackart, (20, 385))
-                        self.screen.blit(xnexttracklabel, (105, 385))
-
+                        self.surface.blit(self.xnexttrackart, (20, 385))
+                        self.surface.blit(xnexttracklabel, (105, 385))
+        
+        # Scale our surface to the required screensize before sending back
+        scaled = pygame.transform.scale(self.surface,self.screensize)
+        self.screen.blit(scaled,(0,0))
             
         return self.screen

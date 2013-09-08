@@ -12,7 +12,7 @@ class myScreen(PiInfoScreen):
     
     def setPluginVariables(self):
 
-        #self.screenratio = self.screensize[0]/self.screensize[1]
+        #self.surfaceratio = self.surfacesize[0]/self.surfacesize[1]
     
         # Set folders for photos
         self.searchfolders = []
@@ -32,12 +32,16 @@ class myScreen(PiInfoScreen):
 
     # Main function - returns screen to main script
     def showScreen(self):
-        self.screen.fill((0,0,0))
+        self.surface.fill((0,0,0))
         rawphoto = pygame.image.load(choice(self.myphotos))
         photosize = rawphoto.get_rect()
-        photofit = photosize.fit(self.screen.get_rect())
+        photofit = photosize.fit(self.surface.get_rect())
         photo = pygame.transform.scale(rawphoto,(photofit[2], photofit[3]))
-        photofit.centerx = self.screen.get_rect().centerx        
-        photofit.centery = self.screen.get_rect().centery
-        self.screen.blit(photo,photofit)
+        photofit.centerx = self.surface.get_rect().centerx        
+        photofit.centery = self.surface.get_rect().centery
+        self.surface.blit(photo,photofit)
+        
+        # Scale our surface to the required screensize before sending back
+        scaled = pygame.transform.scale(self.surface,self.screensize)
+        self.screen.blit(scaled,(0,0))
         return self.screen

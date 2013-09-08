@@ -31,12 +31,12 @@ class myScreen(PiInfoScreen):
         self.config = json.load(jconfig)
     
     def showScreen(self):
-        self.screen.fill([255,255,255])
+        self.surface.fill([255,255,255])
         myfont = pygame.font.SysFont("freesans", 32)
         header = myfont.render("Live Tube Status",1, [0,0,0])
         width=header.get_rect()[2]
-        headerx= int((self.screensize[0]/2) - (width/2))
-        self.screen.blit(header,[headerx,20])
+        headerx= int((self.surfacesize[0]/2) - (width/2))
+        self.surface.blit(header,[headerx,20])
         myfont = pygame.font.SysFont(None, 22)
         response = urllib2.urlopen(self.datasource)
         html = response.read()
@@ -55,17 +55,21 @@ class myScreen(PiInfoScreen):
                 statuscolour = self.statuscolour[1]
             statuslabel = myfont.render(status, 1, statuscolour)    
             myheight = int(linelabel.get_rect()[3]/2)
-            self.screen.fill(linebg,[self.tubelayout[i][0], self.tubelayout[i][1]-myheight,190, 50])
+            self.surface.fill(linebg,[self.tubelayout[i][0], self.tubelayout[i][1]-myheight,190, 50])
             
-            self.screen.blit(linelabel, [self.tubelayout[i][0] + 5, self.tubelayout[i][1] + 5]) 
-            self.screen.blit(statuslabel, [self.tubelayout[i][0] + 200, self.tubelayout[i][1] + 5])
+            self.surface.blit(linelabel, [self.tubelayout[i][0] + 5, self.tubelayout[i][1] + 5]) 
+            self.surface.blit(statuslabel, [self.tubelayout[i][0] + 200, self.tubelayout[i][1] + 5])
 
         updatetext = "Updated at %s on %s." % (
                     strftime("%H:%M"),
                     strftime("%a %d %b %Y") )
         updatelabel = myfont.render(updatetext, 1, [0,0,0])
         updaterect = updatelabel.get_rect()
-        updatepos = [self.screensize[0] - updaterect[2] - 5, self.screensize[1] - updaterect[3] - 5]
-        self.screen.blit(updatelabel, updatepos)
+        updatepos = [self.surfacesize[0] - updaterect[2] - 5, self.surfacesize[1] - updaterect[3] - 5]
+        self.surface.blit(updatelabel, updatepos)
+
+        # Scale our surface to the required screensize before sending back
+        scaled = pygame.transform.scale(self.surface,self.screensize)
+        self.screen.blit(scaled,(0,0))
 
         return self.screen

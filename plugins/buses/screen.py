@@ -69,31 +69,35 @@ class myScreen(PiInfoScreen):
         self.bustimes = self.getBusTimes()
         mytitlefont = pygame.font.SysFont(None, 30)
         mybusfont = pygame.font.SysFont(None, 25)
-        self.screen.fill([0,0,0])
+        self.surface.fill([0,0,0])
         header = mytitlefont.render("Live bus departures",1,(255,255,255))
         headerrect = header.get_rect()
-        headerrect.centerx = self.screen.get_rect().centerx
-        self.screen.blit(header, (headerrect[0],10))
+        headerrect.centerx = self.surface.get_rect().centerx
+        self.surface.blit(header, (headerrect[0],10))
         for i, route in enumerate(self.bustimes):
             stop = mybusfont.render("Stop:", 1, (255,255,255))
             stoptext = mybusfont.render(route['name'], 1, (255,255,255))
             dest = mybusfont.render("Destination:", 1, (255,255,255))
             desttext = mybusfont.render(route['direction'],1,(255,255,255))
-            pygame.draw.rect(self.screen,(5,5,60),(5 + (i*230), 45, 220, 400)) 
-            self.screen.blit(stop, (5 + (i*230) + 5, 50))            
-            self.screen.blit(stoptext, (5 + (i*230) + 5, 70))
-            self.screen.blit(dest, (5 + (i*230) + 5, 95))
-            self.screen.blit(desttext, (5 + (i*230) + 5, 115))
+            pygame.draw.rect(self.surface,(5,5,60),(5 + (i*230), 45, 220, 400)) 
+            self.surface.blit(stop, (5 + (i*230) + 5, 50))            
+            self.surface.blit(stoptext, (5 + (i*230) + 5, 70))
+            self.surface.blit(dest, (5 + (i*230) + 5, 95))
+            self.surface.blit(desttext, (5 + (i*230) + 5, 115))
             
             for j, bus in enumerate(route['buses']):
                 bustime = self.getBusTime(bus['time'])
                 bustext = mybusfont.render("%s: %s" % (bus['route'], bustime), 1, (255,255,255))
-                self.screen.blit(bustext, (5 + (i*230) + 5, (30 * j) + 150))
+                self.surface.blit(bustext, (5 + (i*230) + 5, (30 * j) + 150))
                 
         updatetext = "Updated at %s on %s. Live bus data provided by TfL." % (
                     strftime("%H:%M"),
                     strftime("%a %d %b %Y") )
         updatelabel = pygame.font.SysFont(None,20).render(updatetext, 1, (255,255,255))
-        self.screen.blit(updatelabel,(5,447))
+        self.surface.blit(updatelabel,(5,447))
+        
+        # Scale our surface to the required screensize before sending back
+        scaled = pygame.transform.scale(self.surface,self.screensize)
+        self.screen.blit(scaled,(0,0))
         
         return self.screen
