@@ -67,40 +67,40 @@ class myScreen(PiInfoScreen):
         detail = weather['forecast']['simpleforecast']['forecastday']
         
         # Header
-        self.screen.fill([200,200,255])
+        self.surface.fill([200,200,255])
         header = self.myfontbig.render("Weather forecast",1, [0,0,0])
         headerect = header.get_rect()
-        headerect.centerx = self.screen.get_rect().centerx
+        headerect.centerx = self.surface.get_rect().centerx
         headerect.centery = 25
-        self.screen.blit(header,headerect)
+        self.surface.blit(header,headerect)
         
         # Draw headers
-        pygame.draw.line(self.screen, [0,0,0], [0, 80], [self.screensize[0], 80],3)
+        pygame.draw.line(self.surface, [0,0,0], [0, 80], [self.surfacesize[0], 80],3)
         weatherday = self.myrowfont.render("Day",1,(0,0,0))
         weatherhigh = self.myrowfont.render("High",1,(0,0,0))
         weatherlow = self.myrowfont.render("Low",1,(0,0,0))
         weatherpop = self.myrowfont.render("Rain",1,(0,0,0))
-        self.screen.blit(weatherday, (30,85))
-        self.screen.blit(weatherhigh, (310,85))
-        self.screen.blit(weatherlow, (450,85))        
-        self.screen.blit(weatherpop, (590,85))
+        self.surface.blit(weatherday, (30,85))
+        self.surface.blit(weatherhigh, (310,85))
+        self.surface.blit(weatherlow, (450,85))        
+        self.surface.blit(weatherpop, (590,85))
         
         # Display weather data
         for wrow in self.weatherrows:
-            pygame.draw.line(self.screen, [0,0,0], [0, wrow - 5], [self.screensize[0], wrow - 5], 3)
+            pygame.draw.line(self.surface, [0,0,0], [0, wrow - 5], [self.surfacesize[0], wrow - 5], 3)
 
         for i in range(3):
             for day in detail:
                 if day['period'] == i + 1:
                     weatherdate = day['date']['weekday']
                     weatherlabel = self.mydayfont.render(weatherdate, 1, [0,0,0])
-                    self.screen.blit(weatherlabel, [10, self.weatherrows[i] + 25])
+                    self.surface.blit(weatherlabel, [10, self.weatherrows[i] + 25])
                     iconurl = day['icon_url']
                     iconpath = iconurl.split('/')
                     iconfile = iconpath[len(iconpath) - 1]
                     weatherpath = "http://icons.wxug.com/i/c/i/" + iconfile
                     weatherimage = pygame.transform.scale(self.LoadImageFromUrl(weatherpath),(100,100))
-                    self.screen.blit(weatherimage, [150, self.weatherrows[i]])
+                    self.surface.blit(weatherimage, [150, self.weatherrows[i]])
  
                     weatherhigh = day['high']['celsius'] + u'\xb0' + "C"
                     weatherlow = day['low']['celsius'] + u'\xb0' + "C"
@@ -109,9 +109,9 @@ class myScreen(PiInfoScreen):
                     weatherhighlabel = self.myfontbig.render(weatherhigh, 1, [0,0,0])
                     weatherlowlabel = self.myfontbig.render(weatherlow, 1, [0,0,0])
                     weatherpoplabel = self.myfontbig.render(weatherpop, 1, [0,0,0])
-                    self.screen.blit(weatherhighlabel, [290, self.weatherrows[i]+25])
-                    self.screen.blit(weatherlowlabel, [430, self.weatherrows[i]+25])
-                    self.screen.blit(weatherpoplabel, [580, self.weatherrows[i]+25])
+                    self.surface.blit(weatherhighlabel, [290, self.weatherrows[i]+25])
+                    self.surface.blit(weatherlowlabel, [430, self.weatherrows[i]+25])
+                    self.surface.blit(weatherpoplabel, [580, self.weatherrows[i]+25])
 
         # Add details of update time    
         updatetext = "Updated at %s on %s." % (
@@ -119,8 +119,11 @@ class myScreen(PiInfoScreen):
                     strftime("%a %d %b %Y") )
         updatelabel = self.myfont.render(updatetext, 1, [20,20,20])
         updaterect = updatelabel.get_rect()
-        updatepos = [self.screensize[0] - updaterect[2] - 5, self.screensize[1] - updaterect[3] - 2]
+        updatepos = [self.surfacesize[0] - updaterect[2] - 5, self.surfacesize[1] - updaterect[3] - 2]
 
-        self.screen.blit(updatelabel, updatepos)
+        # Scale our surface to the required screensize before sending back
+        self.surface.blit(updatelabel, updatepos)
+        scaled = pygame.transform.scale(self.surface,self.screensize)
+        self.screen.blit(scaled,(0,0))
 
         return self.screen

@@ -104,6 +104,8 @@ screen = pygame.display.set_mode(size)
 # Set header (useful for testing, not so much for full screen mode!)
 pygame.display.set_caption("Info screen")
 
+# Hide mouse
+pygame.mouse.set_visible(False)
 
 # Stop keys repeating
 pygame.key.set_repeat()

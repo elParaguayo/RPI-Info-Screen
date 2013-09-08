@@ -234,3 +234,5 @@ class PiInfoScreen():
         if self.supported or scale:    
             pygame.init()
             self.screen = pygame.display.set_mode(self.screensize)
+            self.surfacesize = self.supportedsizes[0]
+            self.surface = pygame.Surface(self.surfacesize)
