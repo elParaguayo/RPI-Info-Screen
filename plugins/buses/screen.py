@@ -14,7 +14,6 @@ class myScreen(PiInfoScreen):
     
     def setPluginVariables(self):
         # Get our journey data
-        print "Setting variables..."
         configfile = os.path.join(self.plugindir, "journeys", "journeys.json")
         raw = open(configfile, 'r')
         self.journeys = json.load(raw)
