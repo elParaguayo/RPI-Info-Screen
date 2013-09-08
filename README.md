@@ -12,3 +12,9 @@ Before running:
 4) Pressing "n" moves between screens, "q" quits (this should be handled by GPIO at a later date)  
 
 Any problems, you can post issues on GitHub and I may take a look!
+
+To Do
+-----
+
+[ ] Use FPS limiting to reduce cycles on Pi
+
