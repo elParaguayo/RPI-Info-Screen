@@ -43,7 +43,7 @@ class myScreen(PiInfoScreen):
             cached = False
             
         if cached:
-            if cached['timestamp'] < int(datetime.now().strftime("%s")) + self.cacherefresh:
+            if int(datetime.now().strftime("%s")) < int(cached['timestamp']) + self.cacherefresh:
                 print "Loading cache"
                 weather = cached['weather']
                 try:
