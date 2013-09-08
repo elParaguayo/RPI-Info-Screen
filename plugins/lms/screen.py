@@ -190,7 +190,7 @@ class myScreen(PiInfoScreen):
                         
                     if len(self.nexttracks) > 0:
                         if updatenext:
-                            self.nexttrackart = pygame.transform.scale(self.LoadImageFromUrl("http://%s:%d/music/%s/cover.jpg" % (self.lmsserverIP, self.lmsserverWebPort, str(self.nexttracks[0]['id']))),(75,75))
+                            self.nexttrackart = pygame.transform.scale(self.LoadImageFromUrl("http://%s:%d/music/%d/cover.jpg" % (self.lmsserverIP, self.lmsserverWebPort, self.nexttracks[0]['id'])),(75,75))
 
                         nexttracklabel = mysmallfont.render("Next track: %s - %s" % (self.nexttracks[0]['artist'], self.nexttracks[0]['trackname']), 1, (255,255,255))
                         self.surface.blit(self.nexttrackart, (20, 300))
@@ -198,7 +198,7 @@ class myScreen(PiInfoScreen):
 
                     if len(self.nexttracks) > 1:
                         if updatenext:
-                            self.xnexttrackart = pygame.transform.scale(self.LoadImageFromUrl("http://192.168.0.70:9000/music/" + str(self.nexttracks[1]['id']) + "/cover.jpg"),(75,75))
+                            self.xnexttrackart = pygame.transform.scale(self.LoadImageFromUrl("http://%s:%d/music/%d/cover.jpg" % (self.lmsserverIP, self.lmsserverWebPort, self.nexttracks[1]['id'])),(75,75))
 
                         xnexttracklabel = mysmallfont.render("Next track: %s - %s" % (self.nexttracks[1]['artist'], self.nexttracks[1]['trackname']), 1, (255,255,255))
                         self.surface.blit(self.xnexttrackart, (20, 385))
