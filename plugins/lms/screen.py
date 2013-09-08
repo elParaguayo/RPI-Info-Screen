@@ -125,78 +125,80 @@ class myScreen(PiInfoScreen):
                 self.screen.blit(errortext,errorrect)
         
         else:
+            if len(self.lmsServer.get_players()) == 0:
+                self.squeezePlayer = None
+            else:    
+                self.playlist = self.squeezePlayer.playlist_get_info()
+                self.playlistposition = int(self.squeezePlayer.playlist_get_position())
+               
+                if self.currentTrackChanged(self.playlist, self.playlistposition):
+                    self.getCurrentTrackInfo(self.playlist,self.playlistposition)
+                    
+                if self.nextTrackChanged(self.playlist, self.playlistposition):
+
+                    updatenext = True
+                    self.nexttracks=self.getNextTrackInfo(self.playlist, self.playlistposition)
+                else:
+                    updatenext = False
             
-            self.playlist = self.squeezePlayer.playlist_get_info()
-            self.playlistposition = int(self.squeezePlayer.playlist_get_position())
-           
-            if self.currentTrackChanged(self.playlist, self.playlistposition):
-                self.getCurrentTrackInfo(self.playlist,self.playlistposition)
+                # Now playing...
+                nowtext = myfont.render("Now playing...", 1, (255,255,255))
+                self.screen.blit(nowtext, (290, 120))
                 
-            if self.nextTrackChanged(self.playlist, self.playlistposition):
-
-                updatenext = True
-                self.nexttracks=self.getNextTrackInfo(self.playlist, self.playlistposition)
-            else:
-                updatenext = False
-        
-            # Now playing...
-            nowtext = myfont.render("Now playing...", 1, (255,255,255))
-            self.screen.blit(nowtext, (290, 120))
-            
-            # get artwork
-            self.screen.blit(self.currentart, (20,40))
-            
-            # get artist name
-            artisttext = mybigfont.render(self.currentartist, 1, [255,255,255])
-            self.screen.blit(artisttext, (290,160))
-            
-            # get track name
-            tracktext = myfont.render(self.currenttrackname, 1, [255,255,255])
-            self.screen.blit(tracktext, (290,210))        
-
-            # get track album
-            albumtext = myfont.render(self.currentalbum, 1, [255,255,255])
-            self.screen.blit(albumtext, (290,240))   
-            
-            # Show progress bar
-            elapse = self.squeezePlayer.get_time_elapsed()
-            duration = self.squeezePlayer.get_track_duration()
-            trackposition = elapse / duration
-            self.screen.blit(self.showProgress(trackposition,(150,10),(255,255,255),(0,0,144),(0,0,0)),(290,280))
-            
-            elapsem, elapses = divmod(int(elapse),60)
-            elapseh, elapsem = divmod(elapsem, 60)
-            elapsestring = "%02d:%02d" % (elapsem, elapses)
-            if elapseh > 0 : elapsestring = elapsestring + "%d:" % (elapseh)
-            
-            durationm, durations = divmod(int(duration),60)
-            durationh, durationm = divmod(durationm, 60)             
-            durationstring = "%02d:%02d" % (durationm, durations)
-            if durationh > 0 : durationstring = durationstring + "%d:" % (durationh)    
-            
-            progressstring = "%s / %s" % (elapsestring, durationstring)
-            
-            progresstext = myfont.render(progressstring, 1, (255,255,255))
-            self.screen.blit(progresstext, (455, 270))
-            
-     
-            # Next track info
+                # get artwork
+                self.screen.blit(self.currentart, (20,40))
                 
-            if len(self.nexttracks) > 0:
-                if updatenext:
-                    self.nexttrackart = pygame.transform.scale(self.LoadImageFromUrl("http://%s:%d/music/%s/cover.jpg" % (self.lmsserverIP, self.lmsserverWebPort, str(self.nexttracks[0]['id']))),(75,75))
+                # get artist name
+                artisttext = mybigfont.render(self.currentartist, 1, [255,255,255])
+                self.screen.blit(artisttext, (290,160))
+                
+                # get track name
+                tracktext = myfont.render(self.currenttrackname, 1, [255,255,255])
+                self.screen.blit(tracktext, (290,210))        
 
-                nexttracklabel = mysmallfont.render("Next track: %s - %s" % (self.nexttracks[0]['artist'], self.nexttracks[0]['trackname']), 1, (255,255,255))
-                self.screen.blit(self.nexttrackart, (20, 300))
-                self.screen.blit(nexttracklabel, (105, 300))
+                # get track album
+                albumtext = myfont.render(self.currentalbum, 1, [255,255,255])
+                self.screen.blit(albumtext, (290,240))   
+                
+                # Show progress bar
+                elapse = self.squeezePlayer.get_time_elapsed()
+                duration = self.squeezePlayer.get_track_duration()
+                trackposition = elapse / duration
+                self.screen.blit(self.showProgress(trackposition,(150,10),(255,255,255),(0,0,144),(0,0,0)),(290,280))
+                
+                elapsem, elapses = divmod(int(elapse),60)
+                elapseh, elapsem = divmod(elapsem, 60)
+                elapsestring = "%02d:%02d" % (elapsem, elapses)
+                if elapseh > 0 : elapsestring = elapsestring + "%d:" % (elapseh)
+                
+                durationm, durations = divmod(int(duration),60)
+                durationh, durationm = divmod(durationm, 60)             
+                durationstring = "%02d:%02d" % (durationm, durations)
+                if durationh > 0 : durationstring = durationstring + "%d:" % (durationh)    
+                
+                progressstring = "%s / %s" % (elapsestring, durationstring)
+                
+                progresstext = myfont.render(progressstring, 1, (255,255,255))
+                self.screen.blit(progresstext, (455, 270))
+                
+         
+                # Next track info
+                    
+                if len(self.nexttracks) > 0:
+                    if updatenext:
+                        self.nexttrackart = pygame.transform.scale(self.LoadImageFromUrl("http://%s:%d/music/%s/cover.jpg" % (self.lmsserverIP, self.lmsserverWebPort, str(self.nexttracks[0]['id']))),(75,75))
 
-            if len(self.nexttracks) > 1:
-                if updatenext:
-                    self.xnexttrackart = pygame.transform.scale(self.LoadImageFromUrl("http://192.168.0.70:9000/music/" + str(self.nexttracks[1]['id']) + "/cover.jpg"),(75,75))
+                    nexttracklabel = mysmallfont.render("Next track: %s - %s" % (self.nexttracks[0]['artist'], self.nexttracks[0]['trackname']), 1, (255,255,255))
+                    self.screen.blit(self.nexttrackart, (20, 300))
+                    self.screen.blit(nexttracklabel, (105, 300))
 
-                xnexttracklabel = mysmallfont.render("Next track: %s - %s" % (self.nexttracks[1]['artist'], self.nexttracks[1]['trackname']), 1, (255,255,255))
-                self.screen.blit(self.xnexttrackart, (20, 385))
-                self.screen.blit(xnexttracklabel, (105, 385))
+                if len(self.nexttracks) > 1:
+                    if updatenext:
+                        self.xnexttrackart = pygame.transform.scale(self.LoadImageFromUrl("http://192.168.0.70:9000/music/" + str(self.nexttracks[1]['id']) + "/cover.jpg"),(75,75))
+
+                    xnexttracklabel = mysmallfont.render("Next track: %s - %s" % (self.nexttracks[1]['artist'], self.nexttracks[1]['trackname']), 1, (255,255,255))
+                    self.screen.blit(self.xnexttrackart, (20, 385))
+                    self.screen.blit(xnexttracklabel, (105, 385))
 
             
         return self.screen
