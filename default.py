@@ -3,6 +3,7 @@ import pygame
 import imp
 import os
 import getopt 
+import traceback
 
 # Set some variables
 
@@ -56,6 +57,7 @@ def getScreens():
         
         except:
             # If it doesn't work, ignore that plugin and move on
+            print traceback.format_exc()
             continue
     return a
 
