@@ -167,7 +167,10 @@ class myScreen(PiInfoScreen):
                     # Show progress bar
                     elapse = self.squeezePlayer.get_time_elapsed()
                     duration = self.squeezePlayer.get_track_duration()
-                    trackposition = elapse / duration
+                    try:
+                        trackposition = elapse / duration
+                    except:
+                        trackposition = 0
                     self.surface.blit(self.showProgress(trackposition,(150,10),(255,255,255),(0,0,144),(0,0,0)),(290,280))
                     
                     elapsem, elapses = divmod(int(elapse),60)
