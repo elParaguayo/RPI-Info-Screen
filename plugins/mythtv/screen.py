@@ -92,7 +92,7 @@ class myScreen(PiInfoScreen):
                     rectcolour = (0,50,75)
                     titletext = self.render_textrect(recs[i]["title"], self.myboldfont, mytitlerect, fontcolour, rectcolour,1)
                     timetext = self.render_textrect(recs[i]["time"], self.myitalicfont, mytimerect, fontcolour, rectcolour,1)
-                    desctext = self.render_textrect(recs[i]["desc"], self.myregularfont, mydescrect, fontcolour, rectcolour,0,5)
+                    desctext = self.render_textrect(recs[i]["desc"], self.myregularfont, mydescrect, fontcolour, rectcolour,0,margin=5)
                     self.surface.blit(titletext,((self.rectwidth*i)+(self.rectgap*(i+1)+self.rectadjust), 40))
                     self.surface.blit(timetext,((self.rectwidth*i)+(self.rectgap*(i+1)+self.rectadjust), 80))
                     self.surface.blit(desctext,((self.rectwidth*i)+(self.rectgap*(i+1)+self.rectadjust), 105))
