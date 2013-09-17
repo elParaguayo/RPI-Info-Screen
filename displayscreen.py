@@ -116,7 +116,89 @@ class PiInfoScreen():
         pygame.draw.rect(progress,bordercolour,(0,0,barsize[0],barsize[1]),1)
         return progress
     
-    def render_textrect(self, string, font, rect, text_color, background_color, justification=0, margin=0):
+    #~ def render_textrect(self, string, font, rect, text_color, background_color, justification=0, margin=0):
+        #~ """Returns a surface containing the passed text string, reformatted
+        #~ to fit within the given rect, word-wrapping as necessary. The text
+        #~ will be anti-aliased.
+#~ 
+        #~ Takes the following arguments:
+#~ 
+        #~ string - the text you wish to render. \n begins a new line.
+        #~ font - a Font object
+        #~ rect - a rectstyle giving the size of the surface requested.
+        #~ text_color - a three-byte tuple of the rgb value of the
+                     #~ text color. ex (0, 0, 0) = BLACK
+        #~ background_color - a three-byte tuple of the rgb value of the surface.
+        #~ justification - 0 (default) left-justified
+                        #~ 1 horizontally centered
+                        #~ 2 right-justified
+#~ 
+        #~ Returns the following values:
+#~ 
+        #~ Success - a surface object with the text rendered onto it.
+        #~ Failure - raises a TextRectException if the text won't fit onto the surface.
+        #~ """
+        #~ 
+        #~ """ Amended by el_Paraguayo:
+         #~ - cuts off text instead of raising error
+         #~ - adds variable for margin (right/left#)"""
+       #~ 
+        #~ final_lines = []
+#~ 
+        #~ requested_lines = string.splitlines()
+#~ 
+        #~ # Create a series of lines that will fit on the provided
+        #~ # rectangle.
+#~ 
+        #~ for requested_line in requested_lines:
+            #~ if font.size(requested_line)[0] > (rect.width - (margin * 2)):
+                #~ words = requested_line.split(' ')
+                #~ # if any of our words are too long to fit, return.
+               #~ # for word in words:
+               #~ #     if font.size(word)[0] >= (rect.width - (margin * 2)):
+               #~ #         raise TextRectException, "The word " + word + " is too long to fit in the rect passed."
+                        #~ 
+                #~ # Start a new line
+                #~ accumulated_line = ""
+                #~ for word in words:
+                    #~ test_line = accumulated_line + word + " "
+                    #~ # Build the line while the words fit.    
+                    #~ if font.size(test_line)[0] < (rect.width - (margin * 2)) :
+                        #~ accumulated_line = test_line 
+                    #~ else: 
+                        #~ final_lines.append(accumulated_line) 
+                        #~ accumulated_line = word + " " 
+                #~ final_lines.append(accumulated_line)
+            #~ else: 
+                #~ final_lines.append(requested_line) 
+#~ 
+        #~ # Let's try to write the text out on the surface.
+#~ 
+        #~ surface = pygame.Surface(rect.size) 
+        #~ surface.fill(background_color) 
+#~ 
+        #~ accumulated_height = 0 
+        #~ for line in final_lines: 
+            #~ if accumulated_height + font.size(line)[1] >= rect.height:
+                #~ #raise TextRectException, "Once word-wrapped, the text string was too tall to fit in the rect."
+                #~ break
+            #~ if line != "":
+                #~ tempsurface = font.render(line, 1, text_color)
+                #~ if justification == 0:
+                    #~ surface.blit(tempsurface, (0 + margin, accumulated_height))
+                #~ elif justification == 1: 
+                    #~ surface.blit(tempsurface, ((rect.width - tempsurface.get_width()) / 2, accumulated_height))
+                #~ elif justification == 2:
+                    #~ surface.blit(tempsurface, (rect.width - tempsurface.get_width(), accumulated_height))
+                #~ else:
+                    #~ raise TextRectException, "Invalid justification argument: " + str(justification)
+            #~ accumulated_height += font.size(line)[1]
+#~ 
+        #~ return surface               
+
+    def render_textrect(self, string, font, rect, text_color, background_color, 
+                        justification=0, vjustification=0, margin=0, shrink = False, 
+                        SysFont=None, FontPath=None, MaxFont=0, MinFont=0):
         """Returns a surface containing the passed text string, reformatted
         to fit within the given rect, word-wrapping as necessary. The text
         will be anti-aliased.
@@ -140,61 +222,144 @@ class PiInfoScreen():
         """
         
         """ Amended by el_Paraguayo:
-         - cuts off text instead of raising error
-         - adds variable for margin (right/left#)"""
-       
-        final_lines = []
+         - cutoff=True - cuts off text instead of raising error
+         - margin=(left,right,top,bottom) or 
+         - margin=2 is equal to margin = (2,2,2,2) 
+         - shrink=True adds variable font size to fit text
+            - Has additional args:
+                - SysFont=None - set SysFont to use when shrinking
+                - FontPath=none - set custom font path to use when shrinking
+                MaxFont=0 (max font size)
+                MinFont=0 (min font size)
+         - vjustification=0 adds vertical justification
+            0 = Top
+            1 = Middle
+            2 = Bottom
+        """
+        
+        class TextRectException(Exception):
+            def __init__(self, message = None):
+                self.message = message
+            def __str__(self):
+                return self.message
 
-        requested_lines = string.splitlines()
+        def draw_text_rect(string, font, rect, text_color, background_color, 
+                           justification=0, vjustification=0, margin=0, cutoff=True):
+                               
+            final_lines = []
 
-        # Create a series of lines that will fit on the provided
-        # rectangle.
+            requested_lines = string.splitlines()
 
-        for requested_line in requested_lines:
-            if font.size(requested_line)[0] > (rect.width - (margin * 2)):
-                words = requested_line.split(' ')
-                # if any of our words are too long to fit, return.
-               # for word in words:
-               #     if font.size(word)[0] >= (rect.width - (margin * 2)):
-               #         raise TextRectException, "The word " + word + " is too long to fit in the rect passed."
-                        
-                # Start a new line
-                accumulated_line = ""
-                for word in words:
-                    test_line = accumulated_line + word + " "
-                    # Build the line while the words fit.    
-                    if font.size(test_line)[0] < (rect.width - (margin * 2)) :
-                        accumulated_line = test_line 
-                    else: 
-                        final_lines.append(accumulated_line) 
-                        accumulated_line = word + " " 
-                final_lines.append(accumulated_line)
-            else: 
-                final_lines.append(requested_line) 
+            # Create a series of lines that will fit on the provided
+            # rectangle.
 
-        # Let's try to write the text out on the surface.
+            for requested_line in requested_lines:
+                if font.size(requested_line)[0] > (rect.width - (margin[0] + margin[1])):
+                    words = requested_line.split(' ')
+                    # if any of our words are too long to fit, return.
+                   # for word in words:
+                   #     if font.size(word)[0] >= (rect.width - (margin * 2)):
+                   #         raise TextRectException, "The word " + word + " is too long to fit in the rect passed."
+                            
+                    # Start a new line
+                    accumulated_line = ""
+                    for word in words:
+                        test_line = accumulated_line + word + " "
+                        # Build the line while the words fit.    
+                        if font.size(test_line.strip())[0] < (rect.width - (margin[0] + margin[1])) :
+                            accumulated_line = test_line 
+                        else: 
+                            final_lines.append(accumulated_line) 
+                            accumulated_line = word + " " 
+                    final_lines.append(accumulated_line)
+                else: 
+                    final_lines.append(requested_line) 
 
-        surface = pygame.Surface(rect.size) 
-        surface.fill(background_color) 
+            # Let's try to write the text out on the surface.
 
-        accumulated_height = 0 
-        for line in final_lines: 
-            if accumulated_height + font.size(line)[1] >= rect.height:
-                #raise TextRectException, "Once word-wrapped, the text string was too tall to fit in the rect."
-                break
-            if line != "":
-                tempsurface = font.render(line, 1, text_color)
-                if justification == 0:
-                    surface.blit(tempsurface, (0 + margin, accumulated_height))
-                elif justification == 1: 
-                    surface.blit(tempsurface, ((rect.width - tempsurface.get_width()) / 2, accumulated_height))
-                elif justification == 2:
-                    surface.blit(tempsurface, (rect.width - tempsurface.get_width(), accumulated_height))
+            surface = pygame.Surface(rect.size) 
+            surface.fill(background_color) 
+
+            accumulated_height = 0 
+            for line in final_lines: 
+                if accumulated_height + font.size(line)[1] >= (rect.height - margin[2] - margin[3]):
+                    if not cutoff:
+                        raise TextRectException, "Once word-wrapped, the text string was too tall to fit in the rect."
+                    else:
+                        break
+                if line != "":
+                    tempsurface = font.render(line.strip(), 1, text_color)
+                    if justification == 0:
+                        surface.blit(tempsurface, (0 + margin[0], accumulated_height + margin[2]))
+                    elif justification == 1: 
+                        surface.blit(tempsurface, ((rect.width - tempsurface.get_width()) / 2, accumulated_height + margin[2]))
+                    elif justification == 2:
+                        surface.blit(tempsurface, (rect.width - tempsurface.get_width() - margin[1], accumulated_height + margin[2]))
+                    else:
+                        raise TextRectException, "Invalid justification argument: " + str(justification)
+                accumulated_height += font.size(line)[1]
+
+            if vjustification == 0:
+                # Top aligned, we're ok
+                pass
+            elif vjustification == 1:
+                # Middle aligned
+                tempsurface = pygame.Surface(rect.size)
+                tempsurface.fill(background_color)
+                vpos = (0, (rect.size[1] - accumulated_height)/2)
+                tempsurface.blit(surface, vpos, (0,0,rect.size[0],accumulated_height))
+                surface = tempsurface
+            elif vjustification == 2:
+                # Bottom aligned
+                tempsurface = pygame.Surface(rect.size)
+                tempsurface.fill(background_color)
+                vpos = (0, (rect.size[1] - accumulated_height - margin[3]))
+                tempsurface.blit(surface, vpos, (0,0,rect.size[0],accumulated_height))
+                surface = tempsurface
+            else:
+                raise TextRectException, "Invalid vjustification argument: " + str(justification)
+            return surface
+            
+        surface = None
+        
+        if type(margin) is tuple:
+            if not len(margin) == 4:
+                try:
+                    margin = (int(margin),  int(margin), int(margin), int(margin))
+                except:
+                    margin = (0,0,0,0)
+        elif type(margin) is int:
+            margin = (margin, margin, margin, margin)
+        else:
+            margin = (0,0,0,0)
+        
+        if not shrink:
+            surface = draw_text_rect(string, font, rect, text_color, background_color, 
+                                     justification=justification, vjustification=vjustification, 
+                                     margin=margin, cutoff=False)
+        
+        else:
+            fontsize = MaxFont
+            fit = False
+            while fontsize >= MinFont:
+                if FontPath is None:
+                    myfont = pygame.font.SysFont(SysFont,fontsize)
                 else:
-                    raise TextRectException, "Invalid justification argument: " + str(justification)
-            accumulated_height += font.size(line)[1]
+                    myfont = pygame.font.Font(FontPath,fontsize)
+                try:
+                    surface = draw_text_rect(string, myfont, rect,text_color, background_color, 
+                                             justification=justification, vjustification=vjustification, 
+                                             margin=margin, cutoff=False)
+                    fit = True
+                    break
+                except:
+                    fontsize -= 1
+            if not fit:
+                surface = draw_text_rect(string, myfont, rect, text_color, background_color, 
+                                         justification=justification, vjustification=vjustification, 
+                                         margin=margin)
 
-        return surface               
+        return surface
     
     # Main function - returns screen to main script
     # Will be overriden by plugins
