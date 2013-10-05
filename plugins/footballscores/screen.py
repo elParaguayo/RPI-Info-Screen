@@ -46,8 +46,12 @@ class myScreen(PiInfoScreen):
             
             # Draw team names
             teamrect = pygame.Rect(0,0,200,80)
-            hometeam = self.render_textrect(self.myMatch.HomeTeam, teamfont, teamrect, (255,255,255), (0,0,0), 2)
-            awayteam = self.render_textrect(self.myMatch.AwayTeam, teamfont, teamrect, (255,255,255), (0,0,0), 0)
+            hometeam = self.render_textrect(self.myMatch.HomeTeam, teamfont, teamrect, 
+                                            (255,255,255), (0,0,0), 2, shrink=True, 
+                                            SysFont="freesans", MaxFont=50, MinFont=10, vjustification=1)
+            awayteam = self.render_textrect(self.myMatch.AwayTeam, teamfont, teamrect, 
+                                            (255,255,255), (0,0,0), 0, shrink=True, 
+                                            SysFont="freesans", MaxFont=50, MinFont=10, vjustification=1)
             self.surface.blit(hometeam, (45, 200))
             self.surface.blit(awayteam, (445, 200))
             

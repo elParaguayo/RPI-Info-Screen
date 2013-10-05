@@ -178,6 +178,13 @@ class Match():
                 self.matchtime = matchdetail.find("span", {"class": "match-time"}).string
             except:
                 pass
+        
+        else:
+            self.homescorers = []
+            self.awayscorers = []
+            self.homebadge = None
+            self.awaybadge = None
+            self.matchtime = None
 
     def getJSONFixtures(self):
         jsonresult = self.getPage(self.footballjsonlink)
