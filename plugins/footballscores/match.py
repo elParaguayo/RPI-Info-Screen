@@ -20,6 +20,7 @@ class Match():
         # Set the relevant urls
         self.footballjsonlink = "http://news.bbc.co.uk//sport/hi/english/static/football/statistics/collated/live_scores_summary_all.json"
         self.matchprefix = "http://www.bbc.co.uk/sport/0/football/"
+        self.detailedmatchpage = None
         
         # Boolean to notify user if there is a valid match
         self.matchfound = False
@@ -48,11 +49,20 @@ class Match():
         self.homescore =  match['homeTeam']['score']
         self.awayscore =  match['awayTeam']['score']
         self.status = match['statusCode']
+        
+        if self.awayteam == self.myteam:
+            try:
+                self.teamurl = match['awayTeam']['url']
+            except:
+                self.teamurl = None
+        else:
+            try:
+                self.teamurl = match['homeTeam']['url']
+            except:
+                self.teamurl = None
+        
         if self.detailed:
-            # For some reason the url in the json feed gives a 404
-            # BUT the number before the .stm extension is relevant...
-            self.matchurl = self.matchprefix + re.search('[^/]*(?=\.[^.]+($|\?))', match['url']).group(0)
-            self.getDetails(self.matchurl)
+            self.getDetails(match['url'])
 
     def loadData(self, json):
 
@@ -126,12 +136,51 @@ class Match():
             
         return page
 
-    def getDetails(self, url):
-        page = self.getPage(url)
+    def getDetails(self, matchurl):
         
-        if page:
+        if not self.detailedmatchpage:
+            
+            # Try to find detailed web page for additional info
+            
+            # PAGE 1: Sometimes the json feed contains hints...
+            # For some reason the url in the json feed gives a 404
+            # BUT the number before the .stm extension is relevant...
+            self.matchurl = self.matchprefix + re.search('[^/]*(?=\.[^.]+($|\?))', matchurl).group(0)
+            page = self.getPage(self.matchurl)
+            if page:
+                self.detailedmatchpage = self.matchurl
+            
+            
+            # If that didn't work, let's use the team link in the json feed and
+            # scrape that for a live match link
+            if not page:
+                if not self.teamurl is None:
+                    teampage = BeautifulSoup(self.getPage(self.teamurl))
+                    if teampage:
+                        try:
+                            liveteam = teampage.find("div", {"class": "accordion-container live-today"})
+                            link = liveteam.find("a")
+                            gamepage = "http://www.bbc.co.uk%s" % (link.get("href"))
+                        except:
+                            gamepage = None
+                    if gamepage:
+                        page = self.getPage(gamepage)
+                        if page:
+                            self.detailedmatchpage = gamepage
+            
+            # If we've still not found a page, then let's clear out the variables
+            if not page:
+                self.homescorers = []
+                self.awayscorers = []
+                self.homebadge = None
+                self.awaybadge = None
+                self.matchtime = None
+                self.detailedmatchpage = None               
+        
+        
+        else:
             # Prepare bautiful soup to scrape match page
-            bs =  BeautifulSoup(self.getPage(url))
+            bs =  BeautifulSoup(self.getPage(self.detailedmatchpage))
             
             # Let's get the home and away team detail sections
             match = bs.find("div", {"id": "match-overview"})
@@ -179,12 +228,6 @@ class Match():
             except:
                 pass
         
-        else:
-            self.homescorers = []
-            self.awayscorers = []
-            self.homebadge = None
-            self.awaybadge = None
-            self.matchtime = None
 
     def getJSONFixtures(self):
         jsonresult = self.getPage(self.footballjsonlink)
@@ -218,66 +261,120 @@ class Match():
     
     @property        
     def HomeTeam(self):
+        """Returns string of the home team's name
+        
+        """
         return self.hometeam
             
     @property
     def AwayTeam(self):
+        """Returns string of the away team's name
+        
+        """
         return self.awayteam
     
     @property        
     def HomeScore(self):
+        """Returns the number of goals scored by the home team
+        
+        """
         return self.homescore
     
     @property        
     def AwayScore(self):
+        """Returns the number of goals scored by the away team
+        
+        """
         return self.awayscore
     
     @property        
     def Competition(self):
+        """Returns the name of the competition to which the match belongs
+        
+        e.g. "Premier League", "FA Cup" etc
+        
+        """
         return self.competitionname
     
     @property        
     def Status(self):
+        """Returns the status of the match
+        
+        e.g. "L", "HT", "FT"
+        
+        """
         return self.status
     
     @property        
     def Goal(self):
+        """Boolean. Returns True if score has changed since last update
+        
+        """
         return self.goal
     
     @property        
     def StatusChanged(self):
+        """Boolean. Returns True if status has changed since last update
+        
+        e.g. Match started, half-time started etc
+        
+        """
         return self.statuschange
 
     @property
     def NewMatch(self):
+        """Boolean. Returns True if the match found since last update
+        
+        """
         return self.newmatch
 
     @property
     def MatchFound(self):
+        """Boolean. Returns True if a match is found in JSON feed
+        
+        """
         return self.matchfound
         
     @property
     def JSONError(self):
+        """Boolean. Returns True if class unable to parse data from BBC
+        
+        """
         return self.jsonerror
         
     @property
     def HomeBadge(self):
+        """Returns link to image for home team's badge
+        
+        """
         return self.homebadge
     
     @property    
     def AwayBadge(self):
+        """Returns link to image for away team's badge
+        
+        """
         return self.awaybadge
     
     @property    
     def HomeScorers(self):
+        """Returns list of goalscorers for home team
+        
+        """
         return self.homescorers
     
     @property    
     def AwayScorers(self):
+        """Returns list of goalscorers for away team
+        
+        """
         return self.awayscorers
         
     @property
     def MatchDate(self):
+        """Returns date of match i.e. today's date
+        
+        """
         d = datetime.now()
         datestring = "%s %d %s" % (
                                         d.strftime("%A"),
@@ -288,12 +385,22 @@ class Match():
         
     @property
     def MatchTime(self):
+        """If detailed info available, returns match time in minutes.
+        
+        If not, returns Status.
+        
+        """
         if self.status=="L" and not self.matchtime == None:
             return "%s mins" % (self.matchtime)
         else:
             return self.status
         
     def __str__(self):
+        """Returns short formatted summary of match.
+        
+        e.g. "Arsenal 1-1 Chelsea (L)"
+        
+        """
         return "%s %s-%s %s (%s)" % (
                                       self.hometeam,
                                       self.homescore,
@@ -303,6 +410,11 @@ class Match():
                                       )
     @property
     def PrintDetail(self):
+        """Returns detailed summary of match (if available).
+        
+        e.g. "(L) Arsenal 1-1 Chelsea (Arsenal: Wilshere 10', Chelsea: Lampard 48')"
+        
+        """
         if self.detailed:
             hscore = False
             scorerstring = ""
