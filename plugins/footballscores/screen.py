@@ -13,14 +13,13 @@ class myScreen(PiInfoScreen):
     
     def setPluginVariables(self):
         self.myTeam = self.pluginConfig["Config"]["myteam"]
-        self.myMatch = None
+        self.myMatch = Match(self.myTeam,detailed=True)
 
     def showScreen(self):
         self.surface.fill([0,0,0])
-        matchfound = False
         scorefont = pygame.font.SysFont("freesans", 80)
         teamfont = pygame.font.SysFont("freesans", 50)
-        self.myMatch=Match(self.myTeam,detailed=True)
+        self.myMatch.Update()
         
         if self.myMatch.JSONError:
             # Error parsing data
