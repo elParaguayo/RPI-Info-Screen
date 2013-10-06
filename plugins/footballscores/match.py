@@ -33,6 +33,7 @@ class Match():
         
         # If our team is found...
         if self.matchfound:
+
             # Update the class properties
             self.__update__(self.match, self.competition)
             # No notifications for now
@@ -178,7 +179,7 @@ class Match():
                 self.detailedmatchpage = None               
         
         
-        else:
+        if self.detailedmatchpage:
             # Prepare bautiful soup to scrape match page
             bs =  BeautifulSoup(self.getPage(self.detailedmatchpage))
             
