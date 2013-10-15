@@ -63,7 +63,10 @@ class Match():
                 self.teamurl = None
         
         if self.detailed:
-            self.getDetails(match['url'])
+            try:
+                self.getDetails(match['url'])
+            except:
+                self.getDetails(None)
 
     def loadData(self, json):
 
@@ -138,7 +141,7 @@ class Match():
         return page
 
     def getDetails(self, matchurl):
-        
+        page = False
         if not self.detailedmatchpage:
             
             # Try to find detailed web page for additional info
@@ -146,10 +149,11 @@ class Match():
             # PAGE 1: Sometimes the json feed contains hints...
             # For some reason the url in the json feed gives a 404
             # BUT the number before the .stm extension is relevant...
-            self.matchurl = self.matchprefix + re.search('[^/]*(?=\.[^.]+($|\?))', matchurl).group(0)
-            page = self.getPage(self.matchurl)
-            if page:
-                self.detailedmatchpage = self.matchurl
+            if not matchurl is None:
+                self.matchurl = self.matchprefix + re.search('[^/]*(?=\.[^.]+($|\?))', matchurl).group(0)
+                page = self.getPage(self.matchurl)
+                if page:
+                    self.detailedmatchpage = self.matchurl
             
             
             # If that didn't work, let's use the team link in the json feed and
@@ -168,6 +172,20 @@ class Match():
                         page = self.getPage(gamepage)
                         if page:
                             self.detailedmatchpage = gamepage
+
+            if not page:
+                teampage = BeautifulSoup(self.getPage("http://www.bbc.co.uk/sport/football/teams/%s" % (self.myteam.lower())))
+                if teampage:
+                    try:
+                        liveteam = teampage.find("div", {"class": "accordion-container live-today"})
+                        link = liveteam.find("a")
+                        gamepage = "http://www.bbc.co.uk%s" % (link.get("href"))
+                    except:
+                        gamepage = None
+                if gamepage:
+                    page = self.getPage(gamepage)
+                    if page:
+                        self.detailedmatchpage = gamepage
             
             # If we've still not found a page, then let's clear out the variables
             if not page:
@@ -441,7 +459,7 @@ class Match():
                 scorerstring += ")"
                 
             return "(%s) %s %s-%s %s%s" % (
-                                            self.status,
+                                            self.MatchTime,
                                             self.hometeam,
                                             self.homescore,
                                             self.awayscore,
