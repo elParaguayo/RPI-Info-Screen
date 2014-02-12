@@ -16,6 +16,9 @@ pluginScreens = []
 # Screen size (currently fixed)
 size = width, height = 694, 466
 
+# Automatically cycle screens
+automode = False
+
 # Background about the script
 def usage():
     print "RPi Info Screen by elParaguayo"
@@ -23,6 +26,7 @@ def usage():
     print "Usage: " + sys.argv[0] + " [options]"
     print "\t-l\tList available screens"
     print "\t-h\tDisplay this screen"
+    print "\t-s\tSet size of display e.g. '-s 600,400'"
 
 
 # Plugin handling code adapted from: http://lkubuntu.wordpress.com/2012/10/02/writing-a-python-plugin-api/
@@ -55,11 +59,22 @@ def getScreens():
             # TO DO: Work out whether plugin can return more than one screen!
             a.append(plugin.myScreen(size))
         
-        except:
+        except Exception, err:
             # If it doesn't work, ignore that plugin and move on
-            print traceback.format_exc()
+            # print traceback.format_exc()
             continue
     return a
+
+def screenSize(arg):
+    try:
+        newsize = tuple([int(x) for x in a.split(",")])
+        if len(newsize) == 2:
+            global size
+            global pluginScreens
+            size = width, height = newsize
+            pluginScreens = getScreens()
+    except:
+        pass
 
 # Function for displaying list of plugins that should work
 def listPlugins():
@@ -74,12 +89,15 @@ def listPlugins():
 
 # This is where we start
 
+# Initialise pygame
+pygame.init()
+
 # Get list of screens that can be provided by plugins
 pluginScreens = getScreens()
 
 # Parse some options
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'lh', ['help', 'list'])
+    opts, args = getopt.getopt(sys.argv[1:], 'alhs:', ['auto', 'help', 'list', 'size'])
 except getopt.GetoptError as err:
     print(err)
     usage()
@@ -94,11 +112,15 @@ for o,a in opts:
     if o in ("-h", "--help"):
         usage()
         sys.exit()
+    # Screen size
+    if o in ("-s", "--size"):
+        print "size", a
+        screenSize(a)
+    # Automatically change screens
+    if o in ("-a", "--auto"):
+        automode = True
     # TO DO: add option for automatic screen change (with timeout)
     
-# Initialise pygame
-pygame.init()
-
 # Set our screen size
 # Should this detect attached display automatically?
 screen = pygame.display.set_mode(size)
@@ -179,7 +201,7 @@ while not quit:
         newwait=pygame.time.get_ticks()+2000
         c=a
                 
-    if newscreen and pygame.time.get_ticks()>newwait:
+    if newscreen and (pygame.time.get_ticks()>newwait or automode):
         # Get the next screen
         newscreen = False
         screen = pluginScreens[a].showScreen()
@@ -189,13 +211,21 @@ while not quit:
         # time how long do we display screen
         nextscreen = pluginScreens[a].displaytime * 1000
         refresh = pluginScreens[a].refreshtime * 1000
-        print "Refresh: %s" % (refresh)
+        
 
     # refresh current screen
     if pygame.time.get_ticks() >= (b + refresh):
         screen = pluginScreens[a].showScreen()
         pygame.display.flip()
         b = pygame.time.get_ticks()
+        
+    if automode and (pygame.time.get_ticks() >= (d + nextscreen)):
+        a = a + 1
+        if a > len(pluginScreens) - 1: a = 0
+        d = pygame.time.get_ticks()
+        
+        
+
     
 
 # If we're here we've exited the display loop...
