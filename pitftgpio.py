@@ -132,25 +132,25 @@ class PiTFT_GPIO(object):
 
     @property
     def Button1(self):
-        '''Returns vale of Button 1. Equals 1 when pressed.'''
+        '''Returns vale of Button 1. Equals True when pressed.'''
         if self.__b1:
             return not GPIO.input(self.__pin1)
 
     @property
     def Button2(self):
-        '''Returns vale of Button 2. Equals 1 when pressed.'''
+        '''Returns vale of Button 2. Equals True when pressed.'''
         if self.__b2:
             return not GPIO.input(self.__pin2)
 
     @property
     def Button3(self):
-        '''Returns vale of Button 3. Equals 1 when pressed.'''
+        '''Returns vale of Button 3. Equals True when pressed.'''
         if self.__b3:
             return not GPIO.input(self.__pin3)
 
     @property
     def Button4(self):
-        '''Returns vale of Button 4. Equals 1 when pressed.'''
+        '''Returns vale of Button 4. Equals True when pressed.'''
         if self.__b4:
             return not GPIO.input(self.__pin4)                      
 
