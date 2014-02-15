@@ -27,128 +27,131 @@ from subprocess import check_call
 
 class PiTFT_GPIO(object):
 
-	def __init__(self, v2 = True, buttons = [True, True, True, True]):
-		'''Initialise class.
+    def __init__(self, v2 = True, buttons = [True, True, True, True]):
+        '''Initialise class.
 
-		v2 = True - if using older (v1) revision of board this should be
-		set to False to ensure button 3 works correctly.
+        v2 = True - if using older (v1) revision of board this should be
+        set to False to ensure button 3 works correctly.
 
-		buttons = [button1, button2, button3, button4] if you don't want to initialise
-		any of the buttons then set the appropriate flag to False. Defaults to all
-		buttons being initialised.
+        buttons = [button1, button2, button3, button4] if you don't want to initialise
+        any of the buttons then set the appropriate flag to False. Defaults to all
+        buttons being initialised.
 
-		NB. this class does not handle debouncing of buttons.
-		'''
+        NB. this class does not handle debouncing of buttons.
+        '''
 
-		# Set up some useful properties
-		self.backlightpath = "/sys/class/gpio/gpio252"
-		self.__b1 = False
-		self.__b2 = False
-		self.__b3 = False
-		self.__b4 = False
-		self.__pin1 = 23
-		self.__pin2 = 22
-		self.__pin3 = 21
-		self.__pin4 = 18
+        # Set up some useful properties
+        self.backlightpath = "/sys/class/gpio/gpio252"
+        self.__b1 = False
+        self.__b2 = False
+        self.__b3 = False
+        self.__b4 = False
+        self.__pin1 = 23
+        self.__pin2 = 22
+        self.__pin3 = 27
+        self.__pin4 = 18
 
-		# set GPIO mode
-		GPIO.setmode(GPIO.BCM)
+        # set GPIO mode
+        GPIO.setmode(GPIO.BCM)
 
 
-		# Initialise buttons
-		if buttons[0]:
-			GPIO.setup(self.__pin1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-			self.__b1 = True
+        # Initialise buttons
+        if buttons[0]:
+            GPIO.setup(self.__pin1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            self.__b1 = True
 
-		if buttons[1]:
-			GPIO.setup(self.__pin2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-			self.__b2 = True
+        if buttons[1]:
+            GPIO.setup(self.__pin2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            self.__b2 = True
 
-		if buttons[2]:
-			if not v2:
-				self.__pin3 = 21
+        if buttons[2]:
+            if not v2:
+                self.__pin3 = 21
 
-			GPIO.setup(self.__pin3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-			self.__b3 = True
+            GPIO.setup(self.__pin3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            self.__b3 = True
 
-		if buttons[3]:
-			GPIO.setup(self.__pin4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-			self.__b4 = True
+        if buttons[3]:
+            GPIO.setup(self.__pin4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            self.__b4 = True
 
-		# Try to set up the backlights
-		self.backlightenabled = self.__setupBacklight()
+        # Try to set up the backlights
+        self.backlightenabled = self.__setupBacklight()
 
-		# If the set up worked it can default to turnng light off
-		# so let's turn it back on
-		if self.backlightenabled:
-			self.Backlight(True)
+        # If the set up worked it can default to turnng light off
+        # so let's turn it back on
+        if self.backlightenabled:
+            self.Backlight(True)
 
-	def __setupBacklight(self):
-		
-		# Check if GPIO252 has already been set up
-		if not exists(self.backlightpath):
-			try:
-				check_call(["sudo", "sh", "-c",
-					        "echo 252 > /sys/class/gpio/export"])
+    def __setupBacklight(self):
+        
+        # Check if GPIO252 has already been set up
+        if not exists(self.backlightpath):
+            try:
+                check_call(["sudo", "sh", "-c",
+                            "echo 252 > /sys/class/gpio/export"])
 
-			except:
-				return False
+            except:
+                return False
 
-		# Set the direction
-		try:
-			check_call(["sudo", "sh", "-c",
-				        "echo 'out' > /sys/class/gpio/gpio252/direction"])
+        # Set the direction
+        try:
+            check_call(["sudo", "sh", "-c",
+                        "echo 'out' > /sys/class/gpio/gpio252/direction"])
 
-		except:
-			return False
+        except:
+            return False
 
-		# If we had no errors up to here then we should be able to control
-		# backlight
-		return True
+        # If we had no errors up to here then we should be able to control
+        # backlight
+        return True
 
-	def Backlight(self, light):
-		'''Turns the PiTFT backlight on or off.
+    def Backlight(self, light):
+        '''Turns the PiTFT backlight on or off.
 
-		Usage:
-		 Backlight(True) - turns light on
-		 Backlight(False) - turns light off
-		'''
-		if self.backlightenabled:
-			if light:
-				try:
-					check_call(["sudo", "sh", "-c",
-					        "echo '1' > /sys/class/gpio/gpio252/value"])
-				except:
-					pass
-			else:
-				try:
-					check_call(["sudo", "sh", "-c",
-					        "echo '0' > /sys/class/gpio/gpio252/value"])
-				except:
-					pass
+        Usage:
+         Backlight(True) - turns light on
+         Backlight(False) - turns light off
+        '''
+        if self.backlightenabled:
+            if light:
+                try:
+                    check_call(["sudo", "sh", "-c",
+                            "echo '1' > /sys/class/gpio/gpio252/value"])
+                except:
+                    pass
+            else:
+                try:
+                    check_call(["sudo", "sh", "-c",
+                            "echo '0' > /sys/class/gpio/gpio252/value"])
+                except:
+                    pass
 
-	@property
-	def Button1(self):
-		'''Returns vale of Button 1. Equals 1 when pressed.'''
-		if self.__b1:
-	    	return not GPIO.input(self.__pin1)
+    def Cleanup(self):
+        GPIO.cleanup()
 
-	@property
-	def Button2(self):
-		'''Returns vale of Button 2. Equals 1 when pressed.'''
-	    if self.__b2:
-	    	return not GPIO.input(self.__pin2)
+    @property
+    def Button1(self):
+        '''Returns vale of Button 1. Equals 1 when pressed.'''
+        if self.__b1:
+            return not GPIO.input(self.__pin1)
 
-	@property
-	def Button3(self):
-		'''Returns vale of Button 3. Equals 1 when pressed.'''
-	    if self.__b3:
-	    	return not GPIO.input(self.__pin3)
+    @property
+    def Button2(self):
+        '''Returns vale of Button 2. Equals 1 when pressed.'''
+        if self.__b2:
+            return not GPIO.input(self.__pin2)
 
-	@property
-	def Button4(self):
-		'''Returns vale of Button 4. Equals 1 when pressed.'''
-	    if self.__b4:
-	    	return not GPIO.input(self.__pin4)	    	    	    
+    @property
+    def Button3(self):
+        '''Returns vale of Button 3. Equals 1 when pressed.'''
+        if self.__b3:
+            return not GPIO.input(self.__pin3)
 
-	
+    @property
+    def Button4(self):
+        '''Returns vale of Button 4. Equals 1 when pressed.'''
+        if self.__b4:
+            return not GPIO.input(self.__pin4)                      
+
+    
