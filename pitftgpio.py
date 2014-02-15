@@ -143,12 +143,12 @@ class PiTFT_GPIO(object):
 	def Button3(self):
 		'''Returns vale of Button 3. Equals 1 when pressed.'''
 	    if self.__b3:
-	    	return GPIO.input(self.__pin3)
+	    	return not GPIO.input(self.__pin3)
 
 	@property
 	def Button4(self):
 		'''Returns vale of Button 4. Equals 1 when pressed.'''
 	    if self.__b4:
-	    	return GPIO.input(self.__pin4)	    	    	    
+	    	return not GPIO.input(self.__pin4)	    	    	    
 
 	
