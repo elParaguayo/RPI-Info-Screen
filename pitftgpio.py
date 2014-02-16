@@ -113,18 +113,12 @@ class PiTFT_GPIO(object):
          Backlight(False) - turns light off
         '''
         if self.backlightenabled:
-            if light:
-                try:
-                    check_call(["sudo", "sh", "-c",
-                            "echo '1' > /sys/class/gpio/gpio252/value"])
-                except:
-                    pass
-            else:
-                try:
-                    check_call(["sudo", "sh", "-c",
-                            "echo '0' > /sys/class/gpio/gpio252/value"])
-                except:
-                    pass
+            try:
+                check_call(["sudo", "sh", "-c",
+                        "echo '%d' > /sys/class/gpio/gpio252/value" % (bool(light))])
+            except:
+                pass
+
 
     def Cleanup(self):
         GPIO.cleanup()
