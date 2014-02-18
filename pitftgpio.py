@@ -87,16 +87,16 @@ class PiTFT_GPIO(object):
         # Check if GPIO252 has already been set up
         if not exists(self.backlightpath):
             try:
-                check_call(["sudo", "sh", "-c",
-                            "echo 252 > /sys/class/gpio/export"])
+                with open("/sys/class/gpio/export", "w") as bfile:
+                    bfile.write(252)
 
             except:
                 return False
 
         # Set the direction
         try:
-            check_call(["sudo", "sh", "-c",
-                        "echo 'out' > /sys/class/gpio/gpio252/direction"])
+            with open("/sys/class/gpio/gpio252/direction", "w") as bfile:
+                bfile.write("out")
 
         except:
             return False
@@ -114,37 +114,70 @@ class PiTFT_GPIO(object):
         '''
         if self.backlightenabled:
             try:
-                check_call(["sudo", "sh", "-c",
-                        "echo '%d' > /sys/class/gpio/gpio252/value" % (bool(light))])
+                with open("/sys/class/gpio/gpio252/value", "w") as bfile:
+                    bfile.write("%d" % (bool(light)))
             except:
                 pass
 
+    # Add interrupt handling...
+    def Button1Interrupt(self,callback=None,bouncetime=200):
+        if self.__b1: 
+            GPIO.add_event_detect(self.__pin1, 
+                                  GPIO.FALLING, 
+                                  callback=callback, 
+                                  bouncetime=bouncetime)
 
+    def Button2Interrupt(self,callback=None,bouncetime=200):
+        if self.__b2: 
+            GPIO.add_event_detect(self.__pin2, 
+                                  GPIO.FALLING, 
+                                  callback=callback, 
+                                  bouncetime=bouncetime)
+
+    def Button3Interrupt(self,callback=None,bouncetime=200):
+        if self.__b3: 
+            GPIO.add_event_detect(self.__pin3, 
+                                  GPIO.FALLING, 
+                                  callback=callback, 
+                                  bouncetime=bouncetime)
+
+    def Button4Interrupt(self,callback=None,bouncetime=200):
+        if self.__b4: 
+            GPIO.add_event_detect(self.__pin4, 
+                                  GPIO.FALLING, 
+                                  callback=callback, 
+                                  bouncetime=bouncetime)
+
+    # Include the GPIO cleanup method
     def Cleanup(self):
         GPIO.cleanup()
 
+
+    # Some properties to retrieve value state of pin and return more logical
+    # True when pressed.
     @property
     def Button1(self):
-        '''Returns vale of Button 1. Equals True when pressed.'''
+        '''Returns value of Button 1. Equals True when pressed.'''
         if self.__b1:
             return not GPIO.input(self.__pin1)
 
     @property
     def Button2(self):
-        '''Returns vale of Button 2. Equals True when pressed.'''
+        '''Returns value of Button 2. Equals True when pressed.'''
         if self.__b2:
             return not GPIO.input(self.__pin2)
 
     @property
     def Button3(self):
-        '''Returns vale of Button 3. Equals True when pressed.'''
+        '''Returns value of Button 3. Equals True when pressed.'''
         if self.__b3:
             return not GPIO.input(self.__pin3)
 
     @property
     def Button4(self):
-        '''Returns vale of Button 4. Equals True when pressed.'''
+        '''Returns value of Button 4. Equals True when pressed.'''
         if self.__b4:
             return not GPIO.input(self.__pin4)                      
+
 
     
