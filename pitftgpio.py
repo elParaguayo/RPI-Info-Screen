@@ -88,7 +88,7 @@ class PiTFT_GPIO(object):
         if not exists(self.backlightpath):
             try:
                 with open("/sys/class/gpio/export", "w") as bfile:
-                    bfile.write(252)
+                    bfile.write("252")
 
             except:
                 return False
