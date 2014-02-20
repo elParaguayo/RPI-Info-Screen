@@ -22,7 +22,6 @@ Can also be used to turn backlight on or off.
 
 import RPi.GPIO as GPIO
 from os.path import exists
-from subprocess import check_call
 
 class PiTFT_GPIO(object):
 
