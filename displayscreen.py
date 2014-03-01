@@ -1,3 +1,18 @@
+'''
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <http://www.gnu.org/licenses/>.
+'''
+
 import pygame
 import ConfigParser
 import sys
@@ -50,13 +65,16 @@ class PiInfoScreen():
     
     # Can be overriden to allow plugin to change option type
     # Default method is to treat all options as strings
-    # If option needs different type (bool, int, float) then this should be done here
-    # Alternatively, plugin can just read variables from the pluginConfig dictionary that's created
+    # If option needs different type (bool, int, float) then this should be 
+    # done here
+    # Alternatively, plugin can just read variables from the pluginConfig 
+    # dictionary that's created
     # Any other variables (colours, fonts etc.) should be defined here
     def setPluginVariables(self):
         pass
     
-    # Tells the main script that the plugin is compatible with the requested screen size
+    # Tells the main script that the plugin is compatible with the requested 
+    # screen size
     def supported(self):
         return self.supported
     
@@ -76,7 +94,22 @@ class PiInfoScreen():
     # Returns name of the plugin
     def screenName(self):
         return self.pluginname
-    
+
+    # Handle button events
+    # These should be overriden by screens if required
+
+    def Button1Click(self):
+        pass
+
+    def Button2Click(self):
+        pass        
+
+    def Button3Click(self):
+        pass
+
+    def Button3Click(self):
+        pass   
+
     # Get web page
     def getPage(self, url):
         user_agent = 'Mozilla/5 (Solaris 10) Gecko'
@@ -103,7 +136,8 @@ class PiInfoScreen():
     
     
     # Draws a progress bar    
-    def showProgress(self, position, barsize, bordercolour, fillcolour, bgcolour):
+    def showProgress(self, position, barsize, 
+                     bordercolour, fillcolour, bgcolour):
         try:
             if position < 0 : position = 0
             if position > 1 : position = 1
@@ -116,9 +150,10 @@ class PiInfoScreen():
         pygame.draw.rect(progress,bordercolour,(0,0,barsize[0],barsize[1]),1)
         return progress
 
-    def render_textrect(self, string, font, rect, text_color, background_color, 
-                        justification=0, vjustification=0, margin=0, shrink = False, 
-                        SysFont=None, FontPath=None, MaxFont=0, MinFont=0):
+    def render_textrect(self, string, font, rect, text_color, 
+                        background_color, justification=0, vjustification=0, 
+                        margin=0, shrink = False, SysFont=None, FontPath=None, 
+                        MaxFont=0, MinFont=0):
         """Returns a surface containing the passed text string, reformatted
         to fit within the given rect, word-wrapping as necessary. The text
         will be anti-aliased.
@@ -138,7 +173,8 @@ class PiInfoScreen():
         Returns the following values:
 
         Success - a surface object with the text rendered onto it.
-        Failure - raises a TextRectException if the text won't fit onto the surface.
+        Failure - raises a TextRectException if the text won't fit onto the 
+        surface.
         """
         
         """ Amended by el_Paraguayo:
@@ -164,7 +200,8 @@ class PiInfoScreen():
                 return self.message
 
         def draw_text_rect(string, font, rect, text_color, background_color, 
-                           justification=0, vjustification=0, margin=0, cutoff=True):
+                           justification=0, vjustification=0, margin=0, 
+                           cutoff=True):
                                
             final_lines = []
 
@@ -177,9 +214,10 @@ class PiInfoScreen():
                 if font.size(requested_line)[0] > (rect.width - (margin[0] + margin[1])):
                     words = requested_line.split(' ')
                     # if any of our words are too long to fit, return.
-                   # for word in words:
-                   #     if font.size(word)[0] >= (rect.width - (margin * 2)):
-                   #         raise TextRectException, "The word " + word + " is too long to fit in the rect passed."
+                    # for word in words:
+                    #     if font.size(word)[0] >= (rect.width - (margin * 2)):
+                    #         raise TextRectException, "The word " + word + " 
+                    # is too long to fit in the rect passed."
                             
                     # Start a new line
                     accumulated_line = ""
@@ -294,10 +332,14 @@ class PiInfoScreen():
         self.screen.blit(screentext,screenrect)
             
         return self.screen
-        
+    
+    def setUpdateTimer(self):
+        pygame.time.set_timer(self.userevents["update"], 0)
+        pygame.time.set_timer(self.userevents["update"], int(self.refreshtime * 1000))
+
         
     # This function should not be overriden
-    def __init__(self, screensize, scale=True):
+    def __init__(self, screensize, scale=True, userevents=None):
         
         # Set config filepath...
         self.plugindir=os.path.dirname(sys.modules[self.__class__.__module__].__file__)
@@ -308,6 +350,9 @@ class PiInfoScreen():
         
         # Save the requested screen size
         self.screensize = screensize
+
+        self.userevents = userevents
+
         
         # Check requested screen size is compatible and set supported property
         if screensize not in self.supportedsizes:
@@ -321,3 +366,4 @@ class PiInfoScreen():
             self.screen = pygame.display.set_mode(self.screensize)
             self.surfacesize = self.supportedsizes[0]
             self.surface = pygame.Surface(self.surfacesize)
+            

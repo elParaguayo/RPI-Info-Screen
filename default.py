@@ -25,20 +25,27 @@ import imp
 import os
 import getopt 
 import traceback
+from time import time
 
-# Set some variables
+from pitftgpio import PiTFT_GPIO
 
-# Plugin location and names
-PluginFolder = "./plugins"
-PluginScript = "screen.py"
-MainModule = "screen"
-pluginScreens = []
+# USER VARIABLES - CAN BE EDITED
+debug = True
+screensleep = 60000
 
-# Screen size (currently fixed)
-size = width, height = 694, 466
+# DON'T CHANGE ANYTHING BELOW THIS LINE
+##############################################################################
 
-# Background about the script
+# Tell the RPi to use the TFT screen and that it's a touchscreen device
+# os.putenv('SDL_VIDEODRIVER', 'fbcon')
+# os.putenv('SDL_FBDEV'      , '/dev/fb1')
+# os.putenv('SDL_MOUSEDRV'   , 'TSLIB')
+# os.putenv('SDL_MOUSEDEV'   , '/dev/input/touchscreen')
+
+##############################################################################
+# methods to be called be command line flags
 def usage():
+    '''Background about the script - to be shown when called with help flag'''
     print "RPi Info Screen by elParaguayo"
     print "Displays custom screens on attached display\n"
     print "Usage: " + sys.argv[0] + " [options]"
@@ -46,7 +53,28 @@ def usage():
     print "\t-h\tDisplay this screen"
 
 
-# Plugin handling code adapted from: http://lkubuntu.wordpress.com/2012/10/02/writing-a-python-plugin-api/
+def listPlugins():
+    '''Function for displaying list of plugins that should work'''
+    global pluginScreens
+    print "RPi Info Screen\n"
+    print "Available screens:"
+    a=1
+    for i in pluginScreens:
+        id = str(a)
+        print "\t" + id + "\t" + i.showInfo()  
+        a = a + 1
+##############################################################################
+
+def log(message):
+    '''Prints message if user has set debug flag to true.'''
+    if debug:
+        print message
+
+##############################################################################
+# Plugin handling code adapted from: 
+# http://lkubuntu.wordpress.com/2012/10/02/writing-a-python-plugin-api/
+# THANK YOU!
+# ############################################################################
 def getPlugins():
     plugins = []
     possibleplugins = os.listdir(PluginFolder)
@@ -62,63 +90,167 @@ def getPlugins():
 
 def loadPlugin(plugin):
     return imp.load_module(MainModule, *plugin["info"])
+##############################################################################
 
-# Collect a list of plugins found
+
+##############################################################################
+# Initialise plugin screens
 def getScreens():
+    '''Gets list of available plugin screen objects.'''
     a = []
     for i in getPlugins():
         plugin = loadPlugin(i)
         try:
             # The plugin should have the myScreen function
-            # We send the screen size for future proofing (i.e. plugins should be able to cater
-            # for various screen resolutions
+            # We send the screen size for future proofing (i.e. plugins should
+            # be able to cater for various screen resolutions
             #
             # TO DO: Work out whether plugin can return more than one screen!
-            a.append(plugin.myScreen(size))
+            loadedscreen = plugin.myScreen(size, userevents=piscreenevents)
+            a.append(loadedscreen)
+            showLoadedPlugin(loadedscreen)
         
         except:
             # If it doesn't work, ignore that plugin and move on
-            print traceback.format_exc()
+            log(traceback.format_exc())
             continue
     return a
+##############################################################################
 
-# Function for displaying list of plugins that should work
-def listPlugins():
-    global pluginScreens
-    print "RPi Info Screen\n"
-    print "Available screens:"
-    a=1
-    for i in pluginScreens:
-        id = str(a)
-        print "\t" + id + "\t" + i.showInfo()  
-        a = a + 1
+
+##############################################################################
+# Event handling methods
+def setUpdateTimer(pluginloadtime):
+    ''' Sets an update timer
+    Depending on the speed of the processor, the timer
+    can flood the event queue with UPDATE events but
+    if the plugin takes a while to load there may be no time for
+    anything else.
+    This function provides some headroom in the timer
+    '''
+    interval = max(5 * pluginloadtime, pluginScreens[screenindex].refreshtime)
+
+    pygame.time.set_timer(UPDATESCREEN,0)
+    pygame.time.set_timer(UPDATESCREEN, interval)
+
+def showWelcomeScreen():
+    '''Display a temporary screen to show it's working
+    May not display for long because of later code to show plugin loading
+    '''
+    screen.fill([0,0,0])
+    label = myfont.render("Initialising screens...", 1, (255,255,255))
+    labelpos = label.get_rect()
+    labelpos.centerx = screen.get_rect().centerx
+    labelpos.centery = screen.get_rect().centery
+    screen.blit(label, labelpos) 
+    pygame.display.flip()
+
+def showLoadedPlugin(plugin):
+    '''Display a temporary screen to show when a module is successfully
+    loaded.
+    '''
+    screen.fill([0,0,0])
+    label = myfont.render("Successfully imported: %s"
+                          % (plugin.screenName()), 1, (255,255,255))
+    labelpos = label.get_rect()
+    labelpos.centerx = screen.get_rect().centerx
+    labelpos.centery = screen.get_rect().centery
+    screen.blit(label, labelpos) 
+    pygame.display.flip()
+
+def setNextScreen(a):
+    '''Queues the next screen.'''
+    pygame.time.set_timer(NEWSCREEN,0)
+    pygame.time.set_timer(UPDATESCREEN,0)
+    pygame.event.post(pygame.event.Event(NEXTSCREEN))
+    a = (a + 1) % len(pluginScreens)
+    displayLoadingScreen(a)
+    return a
+
+def displayLoadingScreen(a):
+    '''Displays a loading screen.'''
+    screen.fill((0,0,0))
+    holdtext = myfont.render("Loading screen: %s" 
+                            % pluginScreens[a].screenName(),
+                            1, 
+                            (255,255,255))
+    holdrect = holdtext.get_rect()
+    holdrect.centerx = screen.get_rect().centerx
+    holdrect.centery = screen.get_rect().centery
+    screen.blit(holdtext, holdrect)
+    pygame.display.flip()
+    pygame.time.set_timer(NEWSCREEN, 2000)
+
+def showNewScreen():
+    '''Show the next screen.'''
+    pygame.time.set_timer(NEWSCREEN,0)
+    strttime = time()
+    screen = pluginScreens[screenindex].showScreen()
+    stptime = time()
+    plugdiff = int((stptime - strttime)*1000)
+    setUpdateTimer(plugdiff)
+    pygame.display.flip()
+##############################################################################
+
+##############################################################################
+# Call back functions for TFT Buttons
+def TFTBtn1Click(channel):
+    pygame.event.post(click1event)
+
+def TFTBtn2Click(channel):
+    pygame.event.post(click2event)
+
+def TFTBtn3Click(channel):
+    pygame.event.post(click3event)
+
+def TFTBtn4Click(channel):
+    pygame.event.post(click4event)
+##############################################################################
+
+
 
 # This is where we start
 
-# Get list of screens that can be provided by plugins
-pluginScreens = getScreens()
-
-# Parse some options
-try:
-    opts, args = getopt.getopt(sys.argv[1:], 'lh', ['help', 'list'])
-except getopt.GetoptError as err:
-    print(err)
-    usage()
-    sys.exit()
-
-for o,a in opts:
-    # Show installed plugins
-    if o in ("-l", "--list"):
-        listPlugins()
-        sys.exit()
-    # Show help
-    if o in ("-h", "--help"):
-        usage()
-        sys.exit()
-    # TO DO: add option for automatic screen change (with timeout)
-    
 # Initialise pygame
 pygame.init()
+
+# Initialise screen object
+tftscreen = PiTFT_GPIO()
+
+# Plugin location and names
+PluginFolder = "./plugins"
+PluginScript = "screen.py"
+MainModule = "screen"
+pluginScreens = []
+
+# Screen size (currently fixed)
+size = width, height = 320,240
+
+# Set up some custom events
+TFTBUTTONCLICK = pygame.USEREVENT + 1
+UPDATESCREEN = TFTBUTTONCLICK + 1
+NEXTSCREEN = UPDATESCREEN + 1
+NEWSCREEN = NEXTSCREEN + 1
+SLEEPEVENT = NEWSCREEN + 1
+
+# Set up the four TFT button events
+click1event = pygame.event.Event(TFTBUTTONCLICK, button=1)
+click2event = pygame.event.Event(TFTBUTTONCLICK, button=2)
+click3event = pygame.event.Event(TFTBUTTONCLICK, button=3)
+click4event = pygame.event.Event(TFTBUTTONCLICK, button=4)
+
+# Set up the callback functions for the buttons
+tftscreen.Button1Interrupt(TFTBtn1Click)
+tftscreen.Button2Interrupt(TFTBtn2Click)
+tftscreen.Button3Interrupt(TFTBtn3Click)
+tftscreen.Button4Interrupt(TFTBtn4Click)
+
+# Dict of events that are accessible to screens
+piscreenevents = {
+    "button": TFTBUTTONCLICK,
+    "update": UPDATESCREEN,
+    "nextscreen": NEXTSCREEN,
+}
 
 # Set our screen size
 # Should this detect attached display automatically?
@@ -133,26 +265,40 @@ pygame.mouse.set_visible(False)
 # Stop keys repeating
 pygame.key.set_repeat()
 
-# Display a temporary screen to show it's working
-# May not display for long because of later code to show plugin loading
-screen.fill([0,0,0])
+# Base font for messages
 myfont = pygame.font.SysFont(None, 20)
-label = myfont.render("Initialising screens...", 1, (255,255,255))
-labelpos = label.get_rect()
-labelpos.centerx = screen.get_rect().centerx
-labelpos.centery = screen.get_rect().centery
-screen.blit(label, labelpos) 
-pygame.display.flip()
 
+# Show welcome screen
+showWelcomeScreen()
+
+# Get list of screens that can be provided by plugins
+pluginScreens = getScreens()
+
+# Parse some options
+try:
+    opts, args = getopt.getopt(sys.argv[1:], 'lh', ['help', 'list'])
+except getopt.GetoptError as err:
+    log(err)
+    usage()
+    sys.exit()
+
+for o,a in opts:
+    # Show installed plugins
+    if o in ("-l", "--list"):
+        listPlugins()
+        sys.exit()
+    # Show help
+    if o in ("-h", "--help"):
+        usage()
+        sys.exit()
+    # TO DO: add option for automatic screen change (with timeout)
+    
 # Set some useful variables for controlling the display
 quit=False
-a=1
-b=pygame.time.get_ticks()
-c=-1
-d=0
-newscreen=False
-newwait=0
-refresh = 60000
+screenindex=0
+
+# Queue the first screen
+displayLoadingScreen(screenindex)
 
 # Run our main loop
 while not quit:
@@ -170,8 +316,12 @@ while not quit:
         # 'N' to change screen
         if (event.type == pygame.KEYDOWN):
             if (event.key == pygame.K_n):
-                a = a + 1
-                if a > len(pluginScreens) - 1: a = 0
+                screenindex = setNextScreen(screenindex)
+
+
+        # 'N' to change screen
+        if (event.type == pygame.MOUSEBUTTONUP):
+            screenindex = setNextScreen(screenindex)
         
         # 'S' saves screenshot
         if (event.type == pygame.KEYDOWN):
@@ -179,48 +329,27 @@ while not quit:
                 filename = "screen" + str(a) + ".jpeg"                
                 pygame.image.save(screen, filename)
 
-        if (event.type == pygame.KEYDOWN):
-            if (event.key == pygame.K_f):                
-                pygame.display.toggle_fullscreen()
+        if (event.type == TFTBUTTONCLICK):
+            if (event.button == 1):                
+                pluginScreens[a].Button1Click()
 
-# only update the screen if it has changed
-#
-# TO DO: automatic screen change
-    if a <> c:
-        
-        # Tell the user we're loading next screen
-        screen.fill((0,0,0))
-        holdtext = myfont.render("Loading screen: " + pluginScreens[a].screenName(),1, (255,255,255))
-        holdrect = holdtext.get_rect()
-        holdrect.centerx = screen.get_rect().centerx
-        holdrect.centery = screen.get_rect().centery
-        screen.blit(holdtext, holdrect)
-        pygame.display.flip()
-        newscreen=True
-        newwait=pygame.time.get_ticks()+2000
-        c=a
-                
-    if newscreen and pygame.time.get_ticks()>newwait:
-        # Get the next screen
-        newscreen = False
-        screen = pluginScreens[a].showScreen()
-        pygame.display.flip()
-        
+            if (event.button == 2):                
+                pluginScreens[a].Button2Click()
 
-        # time how long do we display screen
-        nextscreen = pluginScreens[a].displaytime * 1000
-        refresh = pluginScreens[a].refreshtime * 1000
-        print "Refresh: %s" % (refresh)
+            if (event.button == 3):                
+                pluginScreens[a].Button3Click()
 
-    # refresh current screen
-    if pygame.time.get_ticks() >= (b + refresh):
-        screen = pluginScreens[a].showScreen()
-        pygame.display.flip()
-        b = pygame.time.get_ticks()
-    
+            if (event.button == 4):                
+                pluginScreens[a].Button4Click()
+
+        if (event.type == UPDATESCREEN):
+            screen = pluginScreens[screenindex].showScreen()
+            pygame.display.flip()
+
+        if (event.type == NEWSCREEN):
+            showNewScreen()
+
 
 # If we're here we've exited the display loop...
-print "Exiting..."
-sys.exit()
-
-
+log("Exiting...")
+sys.exit(0)
