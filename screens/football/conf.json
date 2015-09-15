@@ -1,0 +1,8 @@
+{
+    "screen": "FootballScreen",
+    "kv": "football.kv",
+    "params": {
+        "teams": ["Barcelona", "Chelsea", "Newcastle"],
+        "leagues": ["118999958"]
+    }
+}

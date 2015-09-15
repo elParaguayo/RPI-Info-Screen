@@ -2,6 +2,7 @@
 *.py[cod]
 *.COPY
 *.ini
+copyscores.sh
 
 # C extensions
 *.so
@@ -20,6 +21,7 @@ develop-eggs
 .installed.cfg
 lib
 lib64
+old
 
 # Installer logs
 pip-log.txt

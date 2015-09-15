@@ -1,0 +1,4 @@
+{
+    "screen": "ClockScreen",
+    "kv": "clock.kv"
+}

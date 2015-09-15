@@ -1,0 +1,131 @@
+<FootballEvent>
+    id: football_lbl_goal
+    text: root.event_text
+    font_size: 0
+    bgcolour: 0,0,0,0
+
+<FootballBase>
+    FloatLayout:
+        id: base_float
+        Label:
+            id: lbl_load
+            text: "Searching for {} matches".format(root.teamname)
+
+<FootballScreen>
+    FloatLayout:
+        id: football_float
+
+        BoxLayout:
+            id: football_base_box
+            Label:
+                id: football_lbl_load
+                text: "Searching for match..."
+
+        ScreenManager:
+            id: football_scrmgr
+            auto_bring_to_front: False
+
+        HiddenButton:
+            size: root.width, 50
+            size_hint: None, None
+            pos: 0, root.height - 50
+            on_press: root.next_screen()
+
+        HiddenButton:
+            size: root.width, 50
+            size_hint: None, None
+            pos: 0, 0
+            on_press: root.next_screen(False)
+
+<FootballNoMatch>
+    Label:
+        text: "{} are not playing today.".format(root.teamname)
+
+<FootballMatchScreen>
+    BoxLayout:
+        orientation: "vertical"
+
+        BoxLayout:
+            orientation: "horizontal"
+
+            AsyncImage:
+                source: root.homebadge
+
+            AsyncImage:
+                source: root.awaybadge
+
+        BoxLayout:
+            orientation: "horizontal"
+
+            Label:
+                text: root.hometeam
+                font_size: 40
+
+            Label:
+                text: root.homescore
+                font_size: 45
+                size_hint_x: 0.15
+
+            Label:
+                text: "-"
+                size_hint_x: 0.1
+
+            Label:
+                text: root.awayscore
+                font_size: 45
+                size_hint_x: 0.15
+
+            Label:
+                text: root.awayteam
+                font_size: 40
+
+        BoxLayout:
+            orientation: "horizontal"
+
+            Label:
+                text: root.status
+
+<LeagueBase>
+    FloatLayout:
+        id: base_float
+
+    BoxLayout:
+        id: league_box
+        orientation: "vertical"
+
+        Label:
+            text: root.leaguename
+            size_hint_y: 0.1
+
+<LeagueGame>
+    orientation: "vertical"
+    height: 40
+    size_hint: 1, None
+
+    BoxLayout:
+        orientation: "horizontal"
+        size_hint_y: 0.7
+        spacing: 5
+
+        BGLabel:
+            text: root.hometeam
+            halign: "right"
+
+        BGLabel:
+            text: root.homescore
+            bgcolour: root.homebg
+            size_hint_x: 0.1
+
+        BGLabel:
+            text: root.awayscore
+            bgcolour: root.awaybg
+            size_hint_x: 0.1
+
+        BGLabel:
+            text: root.awayteam
+            halign: "left"
+
+    Label:
+        text: root.status
+        font_size: 10
+        valign: "top"
